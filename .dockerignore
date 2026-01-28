@@ -31,9 +31,8 @@ coverage
 tmp
 **/tmp
 
-# build artifacts
-dist
-**/dist
+# build artifacts (dist is needed for runtime - do NOT exclude)
+# dist and **/dist removed to allow pre-built files
 apps/macos/.build
 apps/ios/build
 **/*.trace
