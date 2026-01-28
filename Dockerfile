@@ -1,7 +1,8 @@
 FROM node:20-slim
 
-# Install dependencies for Playwright
+# Install system dependencies (git needed for npm, others for Playwright)
 RUN apt-get update && apt-get install -y \
+    git \
     wget \
     gnupg \
     ca-certificates \
@@ -23,6 +24,8 @@ RUN apt-get update && apt-get install -y \
     libxrandr2 \
     xdg-utils \
     curl \
+    python3 \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -30,8 +33,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production 2>/dev/null || npm install --only=production
+# Install dependencies (--omit=dev is the new flag, replacing --only=production)
+RUN npm ci --omit=dev 2>/dev/null || npm install --omit=dev
 
 # Copy source
 COPY . .
