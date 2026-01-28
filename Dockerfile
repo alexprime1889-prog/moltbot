@@ -43,5 +43,12 @@ RUN npx playwright install chromium --with-deps 2>/dev/null || true
 ENV PORT=8080
 EXPOSE 8080
 
-# Start gateway using shell to expand $PORT
-CMD node moltbot.mjs gateway --port ${PORT:-8080}
+# Gateway requires auth token for non-loopback binding
+# Set CLAWDBOT_GATEWAY_TOKEN in Railway environment variables
+ENV CLAWDBOT_GATEWAY_TOKEN=""
+
+# Start gateway with:
+# --allow-unconfigured: no config file needed
+# --bind lan: accept external connections
+# Port from Railway's PORT env var
+CMD node moltbot.mjs gateway --port ${PORT:-8080} --allow-unconfigured --bind lan
