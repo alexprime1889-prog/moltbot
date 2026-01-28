@@ -50,5 +50,5 @@ ENV CLAWDBOT_GATEWAY_TOKEN=""
 # Start gateway with:
 # --allow-unconfigured: no config file needed
 # --bind lan: accept external connections
-# Port from Railway's PORT env var
-CMD node moltbot.mjs gateway --port ${PORT:-8080} --allow-unconfigured --bind lan
+# Port from Railway's PORT env var (uses exec form with explicit shell)
+CMD ["/bin/sh", "-c", "exec node moltbot.mjs gateway --port $PORT --allow-unconfigured --bind lan"]
