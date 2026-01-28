@@ -39,16 +39,15 @@ RUN npm ci --omit=dev --ignore-scripts 2>/dev/null || npm install --omit=dev --i
 # Install Playwright browsers
 RUN npx playwright install chromium --with-deps 2>/dev/null || true
 
-# Expose port (Railway will set PORT env var)
-ENV PORT=8080
+# Railway will inject PORT env var at runtime
+# Do NOT set ENV PORT here - it can conflict with Railway's injection
 EXPOSE 8080
 
 # Gateway requires auth token for non-loopback binding
 # CLAWDBOT_GATEWAY_TOKEN must be set in Railway environment variables
-# (do NOT set it here - Railway env vars would be overwritten)
 
 # Start gateway with:
 # --allow-unconfigured: no config file needed
 # --bind lan: accept external connections
-# Port from Railway's PORT env var (uses exec form with explicit shell)
-CMD ["/bin/sh", "-c", "echo '=== Gateway Startup ===' && echo \"PORT=$PORT\" && echo \"TOKEN_SET=$(test -n \"$CLAWDBOT_GATEWAY_TOKEN\" && echo yes || echo no)\" && exec node moltbot.mjs gateway --port $PORT --allow-unconfigured --bind lan"]
+# Use ${PORT:-8080} for default fallback
+CMD ["/bin/sh", "-c", "echo '=== Gateway Startup ===' && echo \"PORT=${PORT:-8080}\" && echo \"TOKEN=${CLAWDBOT_GATEWAY_TOKEN:+SET}\" && exec node moltbot.mjs gateway --port ${PORT:-8080} --allow-unconfigured --bind lan"]
