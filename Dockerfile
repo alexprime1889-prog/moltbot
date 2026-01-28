@@ -47,9 +47,11 @@ RUN echo "=== Verify Dependencies ===" && \
 # Install Playwright browsers
 RUN npx playwright install chromium --with-deps || echo "Playwright install failed (optional)"
 
-# Disable respawn logic in entry.js (not needed in container)
+# Container runtime settings
 ENV CLAWDBOT_NO_RESPAWN=1
 ENV NODE_OPTIONS="--disable-warning=ExperimentalWarning"
+ENV CLAWDBOT_STATE_DIR=/app/.state
+RUN mkdir -p /app/.state
 
 # Railway will inject PORT env var at runtime
 EXPOSE 8080
