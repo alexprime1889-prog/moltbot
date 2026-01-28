@@ -46,8 +46,5 @@ EXPOSE 8080
 # Gateway requires auth token for non-loopback binding
 # CLAWDBOT_GATEWAY_TOKEN must be set in Railway environment variables
 
-# Start gateway with:
-# --allow-unconfigured: no config file needed
-# --bind lan: accept external connections
-# Use ${PORT:-8080} for default fallback
-CMD ["/bin/sh", "-c", "echo '=== Gateway Startup ===' && echo \"PORT=${PORT:-8080}\" && echo \"TOKEN=${CLAWDBOT_GATEWAY_TOKEN:+SET}\" && exec node moltbot.mjs gateway --port ${PORT:-8080} --allow-unconfigured --bind lan"]
+# Start gateway with hardcoded port 8080 (Railway routes to this via EXPOSE)
+CMD ["/bin/sh", "-c", "echo '=== Gateway Startup ===' && echo 'PORT=8080 (hardcoded)' && echo \"TOKEN=${CLAWDBOT_GATEWAY_TOKEN:+SET}\" && exec node moltbot.mjs gateway --port 8080 --allow-unconfigured --bind lan"]
