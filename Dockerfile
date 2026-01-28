@@ -1,40 +1,47 @@
-FROM node:22-bookworm
+FROM node:20-slim
 
-# Install Bun (required for build scripts)
-RUN curl -fsSL https://bun.sh/install | bash
-ENV PATH="/root/.bun/bin:${PATH}"
-
-RUN corepack enable
+# Install dependencies for Playwright
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg \
+    ca-certificates \
+    fonts-liberation \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libcups2 \
+    libdbus-1-3 \
+    libdrm2 \
+    libgbm1 \
+    libgtk-3-0 \
+    libnspr4 \
+    libnss3 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxkbcommon0 \
+    libxrandr2 \
+    xdg-utils \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-ARG CLAWDBOT_DOCKER_APT_PACKAGES=""
-RUN if [ -n "$CLAWDBOT_DOCKER_APT_PACKAGES" ]; then \
-      apt-get update && \
-      DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $CLAWDBOT_DOCKER_APT_PACKAGES && \
-      apt-get clean && \
-      rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*; \
-    fi
+# Copy package files
+COPY package*.json ./
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
-COPY ui/package.json ./ui/package.json
-COPY patches ./patches
-COPY scripts ./scripts
+# Install dependencies
+RUN npm ci --only=production 2>/dev/null || npm install --only=production
 
-RUN pnpm install --frozen-lockfile
-
+# Copy source
 COPY . .
-RUN CLAWDBOT_A2UI_SKIP_MISSING=1 pnpm build
-# Force pnpm for UI build (Bun may fail on ARM/Synology architectures)
-ENV CLAWDBOT_PREFER_PNPM=1
-RUN pnpm ui:install
-RUN pnpm ui:build
 
-ENV NODE_ENV=production
+# Install Playwright browsers
+RUN npx playwright install chromium --with-deps 2>/dev/null || true
 
-# Security hardening: Run as non-root user
-# The node:22-bookworm image includes a 'node' user (uid 1000)
-# This reduces the attack surface by preventing container escape via root privileges
-USER node
+# Expose port (Railway will set PORT env var)
+ENV PORT=8080
+EXPOSE 8080
 
-CMD ["node", "dist/index.js"]
+# Start gateway using shell to expand $PORT
+CMD node moltbot.mjs gateway --port ${PORT:-8080}
