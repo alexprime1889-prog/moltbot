@@ -33,18 +33,22 @@ WORKDIR /app
 # Copy all source files first (needed for postinstall script)
 COPY . .
 
+# Show versions for debugging
+RUN echo "=== Build Environment ===" && node --version && npm --version
+
 # Install dependencies (--ignore-scripts skips postinstall which sets up git hooks - not needed in container)
-RUN npm ci --omit=dev --ignore-scripts 2>/dev/null || npm install --omit=dev --ignore-scripts
+RUN npm ci --omit=dev --ignore-scripts || npm install --omit=dev --ignore-scripts
+
+# Verify critical dependencies installed
+RUN echo "=== Verify Dependencies ===" && \
+    ls -la node_modules/chalk 2>/dev/null || echo "WARNING: chalk not found" && \
+    ls -la node_modules/commander 2>/dev/null || echo "WARNING: commander not found"
 
 # Install Playwright browsers
-RUN npx playwright install chromium --with-deps 2>/dev/null || true
+RUN npx playwright install chromium --with-deps || echo "Playwright install failed (optional)"
 
 # Railway will inject PORT env var at runtime
-# Do NOT set ENV PORT here - it can conflict with Railway's injection
 EXPOSE 8080
 
-# Gateway requires auth token for non-loopback binding
-# CLAWDBOT_GATEWAY_TOKEN must be set in Railway environment variables
-
-# Start gateway with hardcoded port 8080 (Railway routes to this via EXPOSE)
-CMD ["/bin/sh", "-c", "echo '=== Gateway Startup ===' && echo 'PORT=8080 (hardcoded)' && echo \"TOKEN=${CLAWDBOT_GATEWAY_TOKEN:+SET}\" && exec node moltbot.mjs gateway --port 8080 --allow-unconfigured --bind lan"]
+# Startup diagnostics before launching gateway
+CMD ["/bin/sh", "-c", "echo '=== Gateway Startup ===' && echo \"Node: $(node --version)\" && echo \"Port: 8080\" && echo \"Token: ${CLAWDBOT_GATEWAY_TOKEN:+SET}\" && echo \"Files:\" && ls -la moltbot.mjs dist/entry.js 2>&1 && echo '=== Starting Gateway ===' && exec node moltbot.mjs gateway --port 8080 --allow-unconfigured --bind lan"]
