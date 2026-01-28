@@ -51,4 +51,4 @@ EXPOSE 8080
 # --allow-unconfigured: no config file needed
 # --bind lan: accept external connections
 # Port from Railway's PORT env var (uses exec form with explicit shell)
-CMD ["/bin/sh", "-c", "exec node moltbot.mjs gateway --port $PORT --allow-unconfigured --bind lan"]
+CMD ["/bin/sh", "-c", "echo '=== Gateway Startup ===' && echo \"PORT=$PORT\" && echo \"TOKEN_SET=$(test -n \"$CLAWDBOT_GATEWAY_TOKEN\" && echo yes || echo no)\" && exec node moltbot.mjs gateway --port $PORT --allow-unconfigured --bind lan"]
