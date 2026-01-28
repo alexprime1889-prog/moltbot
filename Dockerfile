@@ -30,14 +30,11 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies (--omit=dev is the new flag, replacing --only=production)
-RUN npm ci --omit=dev 2>/dev/null || npm install --omit=dev
-
-# Copy source
+# Copy all source files first (needed for postinstall script)
 COPY . .
+
+# Install dependencies (--ignore-scripts skips postinstall which sets up git hooks - not needed in container)
+RUN npm ci --omit=dev --ignore-scripts 2>/dev/null || npm install --omit=dev --ignore-scripts
 
 # Install Playwright browsers
 RUN npx playwright install chromium --with-deps 2>/dev/null || true
