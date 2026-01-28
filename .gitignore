@@ -2,7 +2,7 @@ node_modules
 **/node_modules/
 .env
 docker-compose.extra.yml
-dist
+# dist - removed to allow git dependency to include prebuilt files
 *.bun-build
 pnpm-lock.yaml
 bun.lock
