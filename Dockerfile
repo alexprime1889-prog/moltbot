@@ -44,8 +44,8 @@ ENV PORT=8080
 EXPOSE 8080
 
 # Gateway requires auth token for non-loopback binding
-# Set CLAWDBOT_GATEWAY_TOKEN in Railway environment variables
-ENV CLAWDBOT_GATEWAY_TOKEN=""
+# CLAWDBOT_GATEWAY_TOKEN must be set in Railway environment variables
+# (do NOT set it here - Railway env vars would be overwritten)
 
 # Start gateway with:
 # --allow-unconfigured: no config file needed
