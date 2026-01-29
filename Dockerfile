@@ -28,21 +28,26 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
+# Enable corepack for pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 WORKDIR /app
 
 # Copy all source files first (needed for postinstall script)
 COPY . .
 
 # Show versions for debugging
-RUN echo "=== Build Environment ===" && node --version && npm --version
+RUN echo "=== Build Environment ===" && node --version && pnpm --version
 
-# Install dependencies (--ignore-scripts skips postinstall which sets up git hooks - not needed in container)
-RUN npm ci --omit=dev --ignore-scripts || npm install --omit=dev --ignore-scripts
+# Install dependencies (using pnpm for workspace support)
+RUN pnpm install --frozen-lockfile || pnpm install
 
-# Verify critical dependencies installed
-RUN echo "=== Verify Dependencies ===" && \
-    ls -la node_modules/chalk 2>/dev/null || echo "WARNING: chalk not found" && \
-    ls -la node_modules/commander 2>/dev/null || echo "WARNING: commander not found"
+# Build Control UI (CRITICAL - this was missing!)
+RUN echo "=== Building Control UI ===" && \
+    pnpm ui:install && \
+    pnpm ui:build && \
+    echo "=== UI Build Complete ===" && \
+    ls -la ui/dist/ || echo "UI dist check failed"
 
 # Install Playwright browsers
 RUN npx playwright install chromium --with-deps || echo "Playwright install failed (optional)"
@@ -57,4 +62,4 @@ RUN mkdir -p /app/.state
 EXPOSE 8080
 
 # Startup diagnostics before launching gateway
-CMD ["/bin/sh", "-c", "echo '=== Gateway Startup ===' && echo \"Node: $(node --version)\" && echo \"Port: 8080\" && echo \"Token: ${CLAWDBOT_GATEWAY_TOKEN:+SET}\" && echo \"Files:\" && ls -la moltbot.mjs dist/entry.js 2>&1 && echo '=== Starting Gateway ===' && exec node moltbot.mjs gateway --port 8080 --allow-unconfigured --bind lan"]
+CMD ["/bin/sh", "-c", "echo '=== Gateway Startup ===' && echo \"Node: $(node --version)\" && echo \"Port: 8080\" && echo \"Token: ${CLAWDBOT_GATEWAY_TOKEN:+SET}\" && echo \"UI dist:\" && ls -la ui/dist/ 2>&1 | head -5 && echo '=== Starting Gateway ===' && exec node moltbot.mjs gateway --port 8080 --allow-unconfigured --bind lan"]
