@@ -43,10 +43,11 @@ RUN echo "=== Build Environment ===" && node --version && pnpm --version
 RUN pnpm install --frozen-lockfile || pnpm install
 
 # Build Control UI (CRITICAL - explicit install for vite)
+# Note: vite outputs to ../dist/control-ui/ not ui/dist/
 RUN echo "=== Building Control UI ===" && \
     cd ui && pnpm install && pnpm build && \
     echo "=== UI Build Complete ===" && \
-    ls -la dist/ && cd ..
+    ls -la ../dist/control-ui/
 
 # Install Playwright browsers
 RUN npx playwright install chromium --with-deps || echo "Playwright install failed (optional)"
