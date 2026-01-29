@@ -42,12 +42,11 @@ RUN echo "=== Build Environment ===" && node --version && pnpm --version
 # Install dependencies (using pnpm for workspace support)
 RUN pnpm install --frozen-lockfile || pnpm install
 
-# Build Control UI (CRITICAL - this was missing!)
+# Build Control UI (CRITICAL - explicit install for vite)
 RUN echo "=== Building Control UI ===" && \
-    pnpm ui:install && \
-    pnpm ui:build && \
+    cd ui && pnpm install && pnpm build && \
     echo "=== UI Build Complete ===" && \
-    ls -la ui/dist/ || echo "UI dist check failed"
+    ls -la dist/ && cd ..
 
 # Install Playwright browsers
 RUN npx playwright install chromium --with-deps || echo "Playwright install failed (optional)"
