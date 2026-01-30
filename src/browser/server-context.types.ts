@@ -3,6 +3,7 @@ import type { Server } from "node:http";
 import type { RunningChrome } from "./chrome.js";
 import type { BrowserTab } from "./client.js";
 import type { ResolvedBrowserConfig, ResolvedBrowserProfile } from "./config.js";
+import type { KernelBrowserSession } from "./kernel.js";
 
 export type { BrowserTab };
 
@@ -12,6 +13,12 @@ export type { BrowserTab };
 export type ProfileRuntimeState = {
   profile: ResolvedBrowserProfile;
   running: RunningChrome | null;
+  /** Kernel browser session (when driver=kernel) */
+  kernelSession?: KernelBrowserSession | null;
+  /** Dynamic CDP URL from Kernel (overrides profile.cdpUrl) */
+  kernelCdpUrl?: string | null;
+  /** Live View URL from Kernel for user viewing */
+  kernelLiveViewUrl?: string | null;
   /** Sticky tab selection when callers omit targetId (keeps snapshot+act consistent). */
   lastTargetId?: string | null;
 };

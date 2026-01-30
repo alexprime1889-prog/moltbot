@@ -3,10 +3,12 @@ export type BrowserProfileConfig = {
   cdpPort?: number;
   /** CDP URL for this profile (use for remote Chrome). */
   cdpUrl?: string;
-  /** Profile driver (default: clawd). */
-  driver?: "clawd" | "extension";
+  /** Profile driver (default: clawd). "kernel" uses Kernel cloud browsers. */
+  driver?: "clawd" | "extension" | "kernel";
   /** Profile color (hex). Auto-assigned at creation. */
   color: string;
+  /** Kernel profile name for persistent browser state (when driver=kernel). */
+  kernelProfile?: string;
 };
 export type BrowserSnapshotDefaults = {
   /** Default snapshot mode (applies when mode is not provided). */

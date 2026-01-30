@@ -39,7 +39,9 @@ export type ResolvedBrowserProfile = {
   cdpHost: string;
   cdpIsLoopback: boolean;
   color: string;
-  driver: "clawd" | "extension";
+  driver: "clawd" | "extension" | "kernel";
+  /** Kernel profile name for persistent browser state (when driver=kernel) */
+  kernelProfile?: string;
 };
 
 function isLoopbackHost(host: string) {
@@ -232,7 +234,24 @@ export function resolveProfile(
   let cdpHost = resolved.cdpHost;
   let cdpPort = profile.cdpPort ?? 0;
   let cdpUrl = "";
-  const driver = profile.driver === "extension" ? "extension" : "clawd";
+
+  // Determine driver type
+  const driver: "clawd" | "extension" | "kernel" =
+    profile.driver === "extension" ? "extension" : profile.driver === "kernel" ? "kernel" : "clawd";
+
+  // For kernel driver, cdpUrl is dynamic (set at runtime when browser is created)
+  if (driver === "kernel") {
+    return {
+      name: profileName,
+      cdpPort: 0,
+      cdpUrl: "", // Will be set dynamically when Kernel browser is created
+      cdpHost: "",
+      cdpIsLoopback: false,
+      color: profile.color,
+      driver,
+      kernelProfile: profile.kernelProfile,
+    };
+  }
 
   if (rawProfileUrl) {
     const parsed = parseHttpUrl(rawProfileUrl, `browser.profiles.${profileName}.cdpUrl`);
