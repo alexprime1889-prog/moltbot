@@ -239,4 +239,11 @@ export type GatewayConfig = {
    * `x-real-ip`) to determine the client IP for local pairing and HTTP checks.
    */
   trustedProxies?: string[];
+  /**
+   * If true, skip device pairing for connections arriving from trusted proxies
+   * (as defined in trustedProxies). Use this for cloud deployments like Railway
+   * where device pairing isn't practical. Default: false (require pairing).
+   * WARNING: Only enable if you trust all traffic from your proxy.
+   */
+  skipDevicePairingFromTrustedProxy?: boolean;
 };

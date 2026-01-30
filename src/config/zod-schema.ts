@@ -332,6 +332,7 @@ export const MoltbotSchema = z
           .strict()
           .optional(),
         trustedProxies: z.array(z.string()).optional(),
+        skipDevicePairingFromTrustedProxy: z.boolean().optional(),
         tailscale: z
           .object({
             mode: z.union([z.literal("off"), z.literal("serve"), z.literal("funnel")]).optional(),
