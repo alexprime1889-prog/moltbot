@@ -61,10 +61,6 @@ RUN mkdir -p /app/.state
 # Railway will inject PORT env var at runtime
 EXPOSE 8080
 
-# Configure gateway for Railway proxy (100.64.0.0/16 is Railway's internal network)
-# This enables auto-approve for device pairing from Railway load balancer
-# Config goes to STATE_DIR which is /app/.state
-RUN echo '{"gateway":{"trustedProxies":["100.64.0.0/16","10.0.0.0/8"]}}' > /app/.state/moltbot.json
-
-# Startup diagnostics before launching gateway
-CMD ["/bin/sh", "-c", "echo '=== Gateway Startup ===' && echo \"Node: $(node --version)\" && echo \"Port: 8080\" && echo \"Token: ${CLAWDBOT_GATEWAY_TOKEN:+SET}\" && echo \"UI dist:\" && ls -la ui/dist/ 2>&1 | head -5 && echo '=== Starting Gateway ===' && exec node moltbot.mjs gateway --port 8080 --allow-unconfigured --bind lan"]
+# Startup: configure trustedProxies for Railway proxy and launch gateway
+# Railway uses 100.64.0.0/16 for internal network (load balancer)
+CMD ["/bin/sh", "-c", "echo '=== Gateway Startup ===' && echo \"Node: $(node --version)\" && echo \"Port: 8080\" && echo \"Token: ${CLAWDBOT_GATEWAY_TOKEN:+SET}\" && mkdir -p /app/.state && echo '{\"gateway\":{\"trustedProxies\":[\"100.64.0.0/16\",\"10.0.0.0/8\"]}}' > /app/.state/moltbot.json && echo '=== Config Created ===' && cat /app/.state/moltbot.json && echo '=== Starting Gateway ===' && exec node moltbot.mjs gateway --port 8080 --allow-unconfigured --bind lan"]
