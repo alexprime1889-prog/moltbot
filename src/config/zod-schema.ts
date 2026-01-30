@@ -154,12 +154,15 @@ export const MoltbotSchema = z
               .object({
                 cdpPort: z.number().int().min(1).max(65535).optional(),
                 cdpUrl: z.string().optional(),
-                driver: z.union([z.literal("clawd"), z.literal("extension")]).optional(),
+                driver: z
+                  .union([z.literal("clawd"), z.literal("extension"), z.literal("kernel")])
+                  .optional(),
                 color: HexColorSchema,
+                kernelProfile: z.string().optional(),
               })
               .strict()
-              .refine((value) => value.cdpPort || value.cdpUrl, {
-                message: "Profile must set cdpPort or cdpUrl",
+              .refine((value) => value.driver === "kernel" || value.cdpPort || value.cdpUrl, {
+                message: "Profile must set cdpPort or cdpUrl (unless driver is kernel)",
               }),
           )
           .optional(),
