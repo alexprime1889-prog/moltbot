@@ -61,6 +61,9 @@ RUN mkdir -p /app/.state
 # Railway will inject PORT env var at runtime
 EXPOSE 8080
 
+# Cache bust for Railway (change this to force rebuild)
+ARG CACHE_BUST=2026013002
+
 # Startup: configure trustedProxies for Railway proxy and launch gateway
 # Railway uses 100.64.0.0/16 for internal network (load balancer)
 CMD ["/bin/sh", "-c", "echo '=== Gateway Startup ===' && echo \"Node: $(node --version)\" && echo \"Port: 8080\" && echo \"Token: ${CLAWDBOT_GATEWAY_TOKEN:+SET}\" && mkdir -p /app/.state && echo '{\"gateway\":{\"trustedProxies\":[\"100.64.0.0/16\",\"10.0.0.0/8\"]}}' > /app/.state/moltbot.json && echo '=== Config Created ===' && cat /app/.state/moltbot.json && echo '=== Starting Gateway ===' && exec node moltbot.mjs gateway --port 8080 --allow-unconfigured --bind lan"]
