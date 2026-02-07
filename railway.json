@@ -1,0 +1,11 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE"
+  },
+  "deploy": {
+    "startCommand": "/bin/sh -c \"echo '=== Gateway Startup ===' && echo 'Node: $(node --version)' && echo 'Port: ${PORT}' && echo 'Token: ${CLAWDBOT_GATEWAY_TOKEN:+SET}' && mkdir -p /app/.state && echo '{\\\"gateway\\\":{\\\"mode\\\":\\\"local\\\",\\\"trustedProxies\\\":[\\\"100.64.0.0/16\\\",\\\"10.0.0.0/8\\\"],\\\"skipDevicePairingFromTrustedProxy\\\":true},\\\"browser\\\":{\\\"defaultProfile\\\":\\\"kernel\\\",\\\"profiles\\\":{\\\"kernel\\\":{\\\"driver\\\":\\\"kernel\\\",\\\"color\\\":\\\"#9B59B6\\\"}}}}' > /app/.state/moltbot.json && echo '=== Config Created ===' && cat /app/.state/moltbot.json && echo '=== Starting Gateway ===' && exec node moltbot.mjs gateway --port ${PORT} --allow-unconfigured --bind lan\"",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}
