@@ -5,7 +5,6 @@
   },
   "deploy": {
     "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10,
-    "startCommand": "/bin/sh -c 'echo Creating config... && mkdir -p /app/.state && echo {\\\"gateway\\\":{\\\"mode\\\":\\\"local\\\"}} > /app/.state/moltbot.json && cat /app/.state/moltbot.json && echo Starting gateway... && exec node moltbot.mjs --allow-unconfigured gateway --port 8080 --bind lan'"
+    "restartPolicyMaxRetries": 10
   }
 }
