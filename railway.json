@@ -4,6 +4,6 @@
     "builder": "DOCKERFILE"
   },
   "deploy": {
-    "startCommand": "/bin/sh -c \"env | grep -i moltbot; echo 'Home: ' \$HOME; echo 'State dir: ' \$MOLTBOT_STATE_DIR; echo 'Config path: ' \$MOLTBOT_CONFIG_PATH; mkdir -p /app/.state; echo '{\\\"gateway\\\":{\\\"mode\\\":\\\"local\\\"}}' > /app/.state/moltbot.json; cat /app/.state/moltbot.json; exec node moltbot.mjs gateway --port \${PORT} --allow-unconfigured --bind lan\"
+    "startCommand": "/bin/sh -c \"env | grep -i moltbot; echo 'Home: ' \$HOME; echo 'State dir: ' \$MOLTBOT_STATE_DIR; echo 'Config path: ' \$MOLTBOT_CONFIG_PATH; mkdir -p /app/.state; echo '{\\\"gateway\\\":{\\\"mode\\\":\\\"local\\\"}}' > /app/.state/moltbot.json; cat /app/.state/moltbot.json; exec node moltbot.mjs --allow-unconfigured gateway --port \${PORT} --bind lan\"
   }
 }
