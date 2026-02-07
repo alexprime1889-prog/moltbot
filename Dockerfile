@@ -62,7 +62,7 @@ RUN mkdir -p /app/.state
 EXPOSE 8080
 
 # Cache bust for Railway (change this to force rebuild)
-ARG CACHE_BUST=2026020701
+ARG CACHE_BUST=2026020702
 
 # Startup: configure gateway for Railway and launch
 # - trustedProxies: Railway internal network (100.64.0.0/16)
