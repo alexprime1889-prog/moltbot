@@ -4,6 +4,7 @@
     "builder": "DOCKERFILE"
   },
   "deploy": {
+    "startCommand": "node moltbot.mjs --allow-unconfigured gateway --port 8080 --bind lan",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }
