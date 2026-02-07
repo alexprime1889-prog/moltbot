@@ -6,6 +6,6 @@
   "deploy": {
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10,
-    "startCommand": "/bin/sh -c 'mkdir -p /app/.state && echo \"{\\\"gateway\\\":{\\\"mode\\\":\\\"local\\\",\\\"trustedProxies\\\":[\\\"100.64.0.0/16\\\",\\\"10.0.0.0/8\\\"],\\\"skipDevicePairingFromTrustedProxy\\\":true},\\\"browser\\\":{\\\"defaultProfile\\\":\\\"kernel\\\",\\\"profiles\\\":{\\\"kernel\\\":{\\\"driver\\\":\\\"kernel\\\",\\\"color\\\":\\\"#9B59B6\\\"}}}}\" > /app/.state/moltbot.json && exec node moltbot.mjs --allow-unconfigured gateway --port ${PORT:-8080} --bind lan'"
+    "startCommand": "/bin/sh -c 'echo Creating config... && mkdir -p /app/.state && echo {\\\"gateway\\\":{\\\"mode\\\":\\\"local\\\"}} > /app/.state/moltbot.json && cat /app/.state/moltbot.json && echo Starting gateway... && exec node moltbot.mjs --allow-unconfigured gateway --port 8080 --bind lan'"
   }
 }
