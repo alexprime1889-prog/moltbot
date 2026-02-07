@@ -40,6 +40,6 @@ jobs:
         run: |
           # Railway CLI deployment
           echo "Deploying to Railway..."
-          railway up --yes --service gateway
+          railway up --service gateway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
