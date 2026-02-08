@@ -152,7 +152,21 @@ export function resolveProfile(resolved, profileName) {
     let cdpHost = resolved.cdpHost;
     let cdpPort = profile.cdpPort ?? 0;
     let cdpUrl = "";
-    const driver = profile.driver === "extension" ? "extension" : "clawd";
+    // Determine driver type
+    const driver = profile.driver === "extension" ? "extension" : profile.driver === "kernel" ? "kernel" : "clawd";
+    // For kernel driver, cdpUrl is dynamic (set at runtime when browser is created)
+    if (driver === "kernel") {
+        return {
+            name: profileName,
+            cdpPort: 0,
+            cdpUrl: "", // Will be set dynamically when Kernel browser is created
+            cdpHost: "",
+            cdpIsLoopback: false,
+            color: profile.color,
+            driver,
+            kernelProfile: profile.kernelProfile,
+        };
+    }
     if (rawProfileUrl) {
         const parsed = parseHttpUrl(rawProfileUrl, `browser.profiles.${profileName}.cdpUrl`);
         cdpHost = parsed.parsed.hostname;

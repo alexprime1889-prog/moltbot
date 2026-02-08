@@ -6,7 +6,7 @@ import { createSubsystemLogger } from "../logging/subsystem.js";
 import { resolveUserPath } from "../utils.js";
 import { discoverMoltbotPlugins } from "./discovery.js";
 import { loadPluginManifestRegistry } from "./manifest-registry.js";
-import { normalizePluginsConfig, resolveEnableState, resolveMemorySlotDecision, } from "./config-state.js";
+import { applyTestPluginDefaults, normalizePluginsConfig, resolveEnableState, resolveMemorySlotDecision, } from "./config-state.js";
 import { initializeGlobalHookRunner } from "./hook-runner-global.js";
 import { clearPluginCommands } from "./commands.js";
 import { createPluginRegistry } from "./registry.js";
@@ -110,7 +110,7 @@ function pushDiagnostics(diagnostics, append) {
     diagnostics.push(...append);
 }
 export function loadMoltbotPlugins(options = {}) {
-    const cfg = options.config ?? {};
+    const cfg = applyTestPluginDefaults(options.config ?? {});
     const logger = options.logger ?? defaultLogger();
     const validateOnly = options.mode === "validate";
     const normalized = normalizePluginsConfig(cfg.plugins);

@@ -2,7 +2,7 @@ import { createSubsystemLogger } from "../logging/subsystem.js";
 import { buildFileEntry, listMemoryFiles } from "./internal.js";
 const log = createSubsystemLogger("memory");
 export async function syncMemoryFiles(params) {
-    const files = await listMemoryFiles(params.workspaceDir);
+    const files = await listMemoryFiles(params.workspaceDir, params.extraPaths);
     const fileEntries = await Promise.all(files.map(async (file) => buildFileEntry(file, params.workspaceDir)));
     log.debug("memory sync: indexing memory files", {
         files: fileEntries.length,

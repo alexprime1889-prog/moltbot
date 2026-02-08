@@ -52,11 +52,40 @@ function parseRealIp(realIp) {
         return undefined;
     return normalizeIp(stripOptionalPort(raw));
 }
+/**
+ * Check if IP matches a CIDR range (e.g., "100.64.0.0/16").
+ * Only supports IPv4 CIDR notation.
+ */
+function matchesCidr(ip, cidr) {
+    const [range, bits] = cidr.split("/");
+    if (!range || !bits)
+        return false;
+    const mask = parseInt(bits, 10);
+    if (isNaN(mask) || mask < 0 || mask > 32)
+        return false;
+    const ipParts = ip.split(".").map((p) => parseInt(p, 10));
+    const rangeParts = range.split(".").map((p) => parseInt(p, 10));
+    if (ipParts.length !== 4 || rangeParts.length !== 4)
+        return false;
+    if (ipParts.some(isNaN) || rangeParts.some(isNaN))
+        return false;
+    const ipNum = (ipParts[0] << 24) | (ipParts[1] << 16) | (ipParts[2] << 8) | ipParts[3];
+    const rangeNum = (rangeParts[0] << 24) | (rangeParts[1] << 16) | (rangeParts[2] << 8) | rangeParts[3];
+    const maskNum = mask === 0 ? 0 : ~((1 << (32 - mask)) - 1);
+    return (ipNum & maskNum) === (rangeNum & maskNum);
+}
 export function isTrustedProxyAddress(ip, trustedProxies) {
     const normalized = normalizeIp(ip);
     if (!normalized || !trustedProxies || trustedProxies.length === 0)
         return false;
-    return trustedProxies.some((proxy) => normalizeIp(proxy) === normalized);
+    return trustedProxies.some((proxy) => {
+        // Support CIDR notation (e.g., "100.64.0.0/16")
+        if (proxy.includes("/")) {
+            return matchesCidr(normalized, proxy);
+        }
+        // Exact IP match
+        return normalizeIp(proxy) === normalized;
+    });
 }
 export function resolveGatewayClientIp(params) {
     const remote = normalizeIp(params.remoteAddr);

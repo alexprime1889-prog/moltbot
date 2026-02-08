@@ -23,9 +23,15 @@ export function parseSshTarget(raw) {
         const port = Number.parseInt(portRaw, 10);
         if (!host || !Number.isFinite(port) || port <= 0)
             return null;
+        // Security: Reject hostnames starting with '-' to prevent argument injection
+        if (host.startsWith("-"))
+            return null;
         return { user: userPart, host, port };
     }
     if (!hostPart)
+        return null;
+    // Security: Reject hostnames starting with '-' to prevent argument injection
+    if (hostPart.startsWith("-"))
         return null;
     return { user: userPart, host: hostPart, port: 22 };
 }
@@ -108,7 +114,8 @@ export async function startSshPortForward(opts) {
     if (opts.identity?.trim()) {
         args.push("-i", opts.identity.trim());
     }
-    args.push(userHost);
+    // Security: Use '--' to prevent userHost from being interpreted as an option
+    args.push("--", userHost);
     const stderr = [];
     const child = spawn("/usr/bin/ssh", args, {
         stdio: ["ignore", "ignore", "pipe"],

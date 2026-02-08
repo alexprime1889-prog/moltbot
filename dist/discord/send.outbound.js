@@ -5,7 +5,7 @@ import { resolveMarkdownTableMode } from "../config/markdown-tables.js";
 import { recordChannelActivity } from "../infra/channel-activity.js";
 import { convertMarkdownTables } from "../markdown/tables.js";
 import { resolveDiscordAccount } from "./accounts.js";
-import { buildDiscordSendError, createDiscordClient, normalizeDiscordPollInput, normalizeStickerIds, parseRecipient, resolveChannelId, sendDiscordMedia, sendDiscordText, } from "./send.shared.js";
+import { buildDiscordSendError, createDiscordClient, normalizeDiscordPollInput, normalizeStickerIds, parseAndResolveRecipient, resolveChannelId, sendDiscordMedia, sendDiscordText, } from "./send.shared.js";
 export async function sendMessageDiscord(to, text, opts = {}) {
     const cfg = loadConfig();
     const accountInfo = resolveDiscordAccount({
@@ -20,7 +20,7 @@ export async function sendMessageDiscord(to, text, opts = {}) {
     const chunkMode = resolveChunkMode(cfg, "discord", accountInfo.accountId);
     const textWithTables = convertMarkdownTables(text ?? "", tableMode);
     const { token, rest, request } = createDiscordClient(opts, cfg);
-    const recipient = parseRecipient(to);
+    const recipient = await parseAndResolveRecipient(to, opts.accountId);
     const { channelId } = await resolveChannelId(rest, recipient, request);
     let result;
     try {
@@ -52,7 +52,7 @@ export async function sendMessageDiscord(to, text, opts = {}) {
 export async function sendStickerDiscord(to, stickerIds, opts = {}) {
     const cfg = loadConfig();
     const { rest, request } = createDiscordClient(opts, cfg);
-    const recipient = parseRecipient(to);
+    const recipient = await parseAndResolveRecipient(to, opts.accountId);
     const { channelId } = await resolveChannelId(rest, recipient, request);
     const content = opts.content?.trim();
     const stickers = normalizeStickerIds(stickerIds);
@@ -70,7 +70,7 @@ export async function sendStickerDiscord(to, stickerIds, opts = {}) {
 export async function sendPollDiscord(to, poll, opts = {}) {
     const cfg = loadConfig();
     const { rest, request } = createDiscordClient(opts, cfg);
-    const recipient = parseRecipient(to);
+    const recipient = await parseAndResolveRecipient(to, opts.accountId);
     const { channelId } = await resolveChannelId(rest, recipient, request);
     const content = opts.content?.trim();
     const payload = normalizeDiscordPollInput(poll);

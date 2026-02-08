@@ -73,7 +73,7 @@ export function createMemoryGetTool(options) {
     return {
         label: "Memory Get",
         name: "memory_get",
-        description: "Safe snippet read from MEMORY.md or memory/*.md with optional from/lines; use after memory_search to pull only the needed lines and keep context small.",
+        description: "Safe snippet read from MEMORY.md, memory/*.md, or configured memorySearch.extraPaths with optional from/lines; use after memory_search to pull only the needed lines and keep context small.",
         parameters: MemoryGetSchema,
         execute: async (_toolCallId, params) => {
             const relPath = readStringParam(params, "path", { required: true });

@@ -16,6 +16,7 @@ import { resolveTelegramDraftStreamingChunking } from "./draft-chunking.js";
 import { createTelegramDraftStream } from "./draft-stream.js";
 import { cacheSticker, describeStickerImage } from "./sticker-cache.js";
 import { resolveAgentDir } from "../agents/agent-scope.js";
+const EMPTY_RESPONSE_FALLBACK = "No response generated. Please try again.";
 async function resolveStickerVisionSupport(cfg, agentId) {
     try {
         const catalog = await loadModelCatalog({ config: cfg });
@@ -162,6 +163,13 @@ export const dispatchTelegramMessage = async ({ context, bot, cfg, runtime, repl
             logVerbose(`telegram: cached sticker description for ${sticker.fileUniqueId}`);
         }
     }
+    const replyQuoteText = ctxPayload.ReplyToIsQuote && ctxPayload.ReplyToBody
+        ? ctxPayload.ReplyToBody.trim() || undefined
+        : undefined;
+    const deliveryState = {
+        delivered: false,
+        skippedNonSilent: 0,
+    };
     const { queuedFinal } = await dispatchReplyWithBufferedBlockDispatcher({
         ctx: ctxPayload,
         cfg,
@@ -173,10 +181,7 @@ export const dispatchTelegramMessage = async ({ context, bot, cfg, runtime, repl
                     await flushDraft();
                     draftStream?.stop();
                 }
-                const replyQuoteText = ctxPayload.ReplyToIsQuote && ctxPayload.ReplyToBody
-                    ? ctxPayload.ReplyToBody.trim() || undefined
-                    : undefined;
-                await deliverReplies({
+                const result = await deliverReplies({
                     replies: [payload],
                     chatId: String(chatId),
                     token: opts.token,
@@ -191,6 +196,13 @@ export const dispatchTelegramMessage = async ({ context, bot, cfg, runtime, repl
                     linkPreview: telegramCfg.linkPreview,
                     replyQuoteText,
                 });
+                if (result.delivered) {
+                    deliveryState.delivered = true;
+                }
+            },
+            onSkip: (_payload, info) => {
+                if (info.reason !== "silent")
+                    deliveryState.skippedNonSilent += 1;
             },
             onError: (err, info) => {
                 runtime.error?.(danger(`telegram ${info.kind} reply failed: ${String(err)}`));
@@ -223,7 +235,26 @@ export const dispatchTelegramMessage = async ({ context, bot, cfg, runtime, repl
         },
     });
     draftStream?.stop();
-    if (!queuedFinal) {
+    let sentFallback = false;
+    if (!deliveryState.delivered && deliveryState.skippedNonSilent > 0) {
+        const result = await deliverReplies({
+            replies: [{ text: EMPTY_RESPONSE_FALLBACK }],
+            chatId: String(chatId),
+            token: opts.token,
+            runtime,
+            bot,
+            replyToMode,
+            textLimit,
+            messageThreadId: resolvedThreadId,
+            tableMode,
+            chunkMode,
+            linkPreview: telegramCfg.linkPreview,
+            replyQuoteText,
+        });
+        sentFallback = result.delivered;
+    }
+    const hasFinalResponse = queuedFinal || sentFallback;
+    if (!hasFinalResponse) {
         if (isGroup && historyKey) {
             clearHistoryEntriesIfEnabled({ historyMap: groupHistories, historyKey, limit: historyLimit });
         }

@@ -68,6 +68,7 @@ function buildBaseSessionKey(params) {
     return buildAgentSessionKey({
         agentId: params.agentId,
         channel: params.channel,
+        accountId: params.accountId,
         peer: params.peer,
         dmScope: params.cfg.session?.dmScope ?? "main",
         identityLinks: params.cfg.session?.identityLinks,
@@ -147,6 +148,7 @@ async function resolveSlackSession(params) {
         cfg: params.cfg,
         agentId: params.agentId,
         channel: "slack",
+        accountId: params.accountId,
         peer,
     });
     const threadId = normalizeThreadId(params.threadId ?? params.replyToId);
@@ -181,6 +183,7 @@ function resolveDiscordSession(params) {
         cfg: params.cfg,
         agentId: params.agentId,
         channel: "discord",
+        accountId: params.accountId,
         peer,
     });
     const explicitThreadId = normalizeThreadId(params.threadId);
@@ -225,6 +228,7 @@ function resolveTelegramSession(params) {
         cfg: params.cfg,
         agentId: params.agentId,
         channel: "telegram",
+        accountId: params.accountId,
         peer,
     });
     return {
@@ -250,6 +254,7 @@ function resolveWhatsAppSession(params) {
         cfg: params.cfg,
         agentId: params.agentId,
         channel: "whatsapp",
+        accountId: params.accountId,
         peer,
     });
     return {
@@ -273,6 +278,7 @@ function resolveSignalSession(params) {
             cfg: params.cfg,
             agentId: params.agentId,
             channel: "signal",
+            accountId: params.accountId,
             peer,
         });
         return {
@@ -307,6 +313,7 @@ function resolveSignalSession(params) {
         cfg: params.cfg,
         agentId: params.agentId,
         channel: "signal",
+        accountId: params.accountId,
         peer,
     });
     return {
@@ -329,6 +336,7 @@ function resolveIMessageSession(params) {
             cfg: params.cfg,
             agentId: params.agentId,
             channel: "imessage",
+            accountId: params.accountId,
             peer,
         });
         return {
@@ -352,6 +360,7 @@ function resolveIMessageSession(params) {
         cfg: params.cfg,
         agentId: params.agentId,
         channel: "imessage",
+        accountId: params.accountId,
         peer,
     });
     const toPrefix = parsed.kind === "chat_id"
@@ -379,6 +388,7 @@ function resolveMatrixSession(params) {
         cfg: params.cfg,
         agentId: params.agentId,
         channel: "matrix",
+        accountId: params.accountId,
         peer,
     });
     return {
@@ -410,6 +420,7 @@ function resolveMSTeamsSession(params) {
         cfg: params.cfg,
         agentId: params.agentId,
         channel: "msteams",
+        accountId: params.accountId,
         peer,
     });
     return {
@@ -443,6 +454,7 @@ function resolveMattermostSession(params) {
         cfg: params.cfg,
         agentId: params.agentId,
         channel: "mattermost",
+        accountId: params.accountId,
         peer,
     });
     const threadId = normalizeThreadId(params.replyToId ?? params.threadId);
@@ -484,6 +496,7 @@ function resolveBlueBubblesSession(params) {
         cfg: params.cfg,
         agentId: params.agentId,
         channel: "bluebubbles",
+        accountId: params.accountId,
         peer,
     });
     return {
@@ -508,6 +521,7 @@ function resolveNextcloudTalkSession(params) {
         cfg: params.cfg,
         agentId: params.agentId,
         channel: "nextcloud-talk",
+        accountId: params.accountId,
         peer,
     });
     return {
@@ -532,6 +546,7 @@ function resolveZaloSession(params) {
         cfg: params.cfg,
         agentId: params.agentId,
         channel: "zalo",
+        accountId: params.accountId,
         peer,
     });
     return {
@@ -557,6 +572,7 @@ function resolveZalouserSession(params) {
         cfg: params.cfg,
         agentId: params.agentId,
         channel: "zalouser",
+        accountId: params.accountId,
         peer,
     });
     return {
@@ -577,6 +593,7 @@ function resolveNostrSession(params) {
         cfg: params.cfg,
         agentId: params.agentId,
         channel: "nostr",
+        accountId: params.accountId,
         peer,
     });
     return {
@@ -635,6 +652,7 @@ function resolveTlonSession(params) {
         cfg: params.cfg,
         agentId: params.agentId,
         channel: "tlon",
+        accountId: params.accountId,
         peer,
     });
     return {

@@ -460,7 +460,8 @@ function clearConfigCache() {
     configCache = null;
 }
 export function loadConfig() {
-    const configPath = resolveConfigPath();
+    const io = createConfigIO();
+    const configPath = io.configPath;
     const now = Date.now();
     if (shouldUseConfigCache(process.env)) {
         const cached = configCache;
@@ -468,7 +469,7 @@ export function loadConfig() {
             return cached.config;
         }
     }
-    const config = createConfigIO({ configPath }).loadConfig();
+    const config = io.loadConfig();
     if (shouldUseConfigCache(process.env)) {
         const cacheMs = resolveConfigCacheMs(process.env);
         if (cacheMs > 0) {
@@ -482,11 +483,9 @@ export function loadConfig() {
     return config;
 }
 export async function readConfigFileSnapshot() {
-    return await createConfigIO({
-        configPath: resolveConfigPath(),
-    }).readConfigFileSnapshot();
+    return await createConfigIO().readConfigFileSnapshot();
 }
 export async function writeConfigFile(cfg) {
     clearConfigCache();
-    await createConfigIO({ configPath: resolveConfigPath() }).writeConfigFile(cfg);
+    await createConfigIO().writeConfigFile(cfg);
 }

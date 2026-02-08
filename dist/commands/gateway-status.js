@@ -71,7 +71,7 @@ export async function gatewayStatusCommand(opts, runtime) {
                 const base = user ? `${user}@${host.trim()}` : host.trim();
                 return sshPort !== 22 ? `${base}:${sshPort}` : base;
             })
-                .filter((x) => Boolean(x));
+                .filter((candidate) => Boolean(candidate && parseSshTarget(candidate)));
             if (candidates.length > 0)
                 sshTarget = candidates[0] ?? null;
         }

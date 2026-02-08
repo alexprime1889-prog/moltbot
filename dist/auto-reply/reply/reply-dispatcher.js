@@ -21,6 +21,7 @@ function normalizeReplyPayloadInternal(payload, opts) {
         responsePrefix: opts.responsePrefix,
         responsePrefixContext: prefixContext,
         onHeartbeatStrip: opts.onHeartbeatStrip,
+        onSkip: opts.onSkip,
     });
 }
 export function createReplyDispatcher(options) {
@@ -36,7 +37,13 @@ export function createReplyDispatcher(options) {
         final: 0,
     };
     const enqueue = (kind, payload) => {
-        const normalized = normalizeReplyPayloadInternal(payload, options);
+        const normalized = normalizeReplyPayloadInternal(payload, {
+            responsePrefix: options.responsePrefix,
+            responsePrefixContext: options.responsePrefixContext,
+            responsePrefixContextProvider: options.responsePrefixContextProvider,
+            onHeartbeatStrip: options.onHeartbeatStrip,
+            onSkip: (reason) => options.onSkip?.(payload, { kind, reason }),
+        });
         if (!normalized)
             return false;
         queuedCounts[kind] += 1;

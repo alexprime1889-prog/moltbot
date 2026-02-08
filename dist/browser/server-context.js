@@ -3,6 +3,7 @@ import { appendCdpPath, createTargetViaCdp, getHeadersWithAuth, normalizeCdpWsUr
 import { isChromeCdpReady, isChromeReachable, launchClawdChrome, resolveClawdUserDataDir, stopClawdChrome, } from "./chrome.js";
 import { resolveProfile } from "./config.js";
 import { ensureChromeExtensionRelayServer, stopChromeExtensionRelayServer, } from "./extension-relay.js";
+import { createKernelBrowser, isKernelConfigured } from "./kernel.js";
 import { getPwAiModule } from "./pw-ai-module.js";
 import { resolveTargetIdFromTabs } from "./target-id.js";
 import { movePathToTrash } from "./trash.js";
@@ -69,13 +70,37 @@ function createProfileContext(opts, profile) {
         const profileState = getProfileState();
         profileState.running = running;
     };
+    /**
+     * Get the effective CDP URL for this profile.
+     * For kernel driver, returns the dynamic URL from the active session.
+     */
+    const getCdpUrl = () => {
+        if (profile.driver === "kernel") {
+            const profileState = getProfileState();
+            if (profileState.kernelCdpUrl) {
+                return profileState.kernelCdpUrl;
+            }
+            throw new Error(`Kernel browser for profile "${profile.name}" is not started. Call ensureBrowserAvailable first.`);
+        }
+        return profile.cdpUrl;
+    };
+    /**
+     * Check if this is a remote CDP (not loopback).
+     * Kernel browsers are always treated as remote.
+     */
+    const isRemoteCdp = () => {
+        if (profile.driver === "kernel")
+            return true;
+        return !profile.cdpIsLoopback;
+    };
     const listTabs = async () => {
-        // For remote profiles, use Playwright's persistent connection to avoid ephemeral sessions
-        if (!profile.cdpIsLoopback) {
+        const cdpUrl = getCdpUrl();
+        // For remote profiles (including kernel), use Playwright's persistent connection
+        if (isRemoteCdp()) {
             const mod = await getPwAiModule({ mode: "strict" });
             const listPagesViaPlaywright = mod?.listPagesViaPlaywright;
             if (typeof listPagesViaPlaywright === "function") {
-                const pages = await listPagesViaPlaywright({ cdpUrl: profile.cdpUrl });
+                const pages = await listPagesViaPlaywright({ cdpUrl });
                 return pages.map((p) => ({
                     targetId: p.targetId,
                     title: p.title,
@@ -84,25 +109,25 @@ function createProfileContext(opts, profile) {
                 }));
             }
         }
-        const raw = await fetchJson(appendCdpPath(profile.cdpUrl, "/json/list"));
+        const raw = await fetchJson(appendCdpPath(cdpUrl, "/json/list"));
         return raw
             .map((t) => ({
             targetId: t.id ?? "",
             title: t.title ?? "",
             url: t.url ?? "",
-            wsUrl: normalizeWsUrl(t.webSocketDebuggerUrl, profile.cdpUrl),
+            wsUrl: normalizeWsUrl(t.webSocketDebuggerUrl, cdpUrl),
             type: t.type,
         }))
             .filter((t) => Boolean(t.targetId));
     };
     const openTab = async (url) => {
-        // For remote profiles, use Playwright's persistent connection to create tabs
-        // This ensures the tab persists beyond a single request
-        if (!profile.cdpIsLoopback) {
+        const cdpUrl = getCdpUrl();
+        // For remote profiles (including kernel), use Playwright's persistent connection
+        if (isRemoteCdp()) {
             const mod = await getPwAiModule({ mode: "strict" });
             const createPageViaPlaywright = mod?.createPageViaPlaywright;
             if (typeof createPageViaPlaywright === "function") {
-                const page = await createPageViaPlaywright({ cdpUrl: profile.cdpUrl, url });
+                const page = await createPageViaPlaywright({ cdpUrl, url });
                 const profileState = getProfileState();
                 profileState.lastTargetId = page.targetId;
                 return {
@@ -114,7 +139,7 @@ function createProfileContext(opts, profile) {
             }
         }
         const createdViaCdp = await createTargetViaCdp({
-            cdpUrl: profile.cdpUrl,
+            cdpUrl,
             url,
         })
             .then((r) => r.targetId)
@@ -205,7 +230,40 @@ function createProfileContext(opts, profile) {
         const current = state();
         const remoteCdp = !profile.cdpIsLoopback;
         const isExtension = profile.driver === "extension";
+        const isKernel = profile.driver === "kernel";
         const profileState = getProfileState();
+        // Handle Kernel cloud browser
+        if (isKernel) {
+            // Check if we already have an active Kernel session
+            if (profileState.kernelSession && profileState.kernelCdpUrl) {
+                // Verify session is still reachable
+                try {
+                    const reachable = await isChromeCdpReady(profileState.kernelCdpUrl, 2000, 3000);
+                    if (reachable)
+                        return;
+                }
+                catch {
+                    // Session expired, will create new one
+                }
+                // Session no longer valid, clean up
+                profileState.kernelSession = null;
+                profileState.kernelCdpUrl = null;
+                profileState.kernelLiveViewUrl = null;
+            }
+            // Create new Kernel browser session
+            if (!isKernelConfigured()) {
+                throw new Error(`Profile "${profile.name}" uses driver=kernel but KERNEL_API_KEY is not set.`);
+            }
+            const kernelSession = await createKernelBrowser({
+                profileName: profile.kernelProfile,
+                saveProfileChanges: Boolean(profile.kernelProfile),
+                timeoutSeconds: 1800, // 30 minutes
+            });
+            profileState.kernelSession = kernelSession;
+            profileState.kernelCdpUrl = kernelSession.cdpWsUrl;
+            profileState.kernelLiveViewUrl = kernelSession.liveViewUrl;
+            return;
+        }
         const httpReachable = await isHttpReachable();
         if (isExtension && remoteCdp) {
             throw new Error(`Profile "${profile.name}" uses driver=extension but cdpUrl is not loopback (${profile.cdpUrl}).`);

@@ -1,6 +1,7 @@
 import { getChannelDock } from "../channels/dock.js";
 import { getChannelPlugin, listChannelPlugins } from "../channels/plugins/index.js";
 import { normalizeAnyChannelId } from "../channels/registry.js";
+import { defaultRuntime } from "../runtime.js";
 /**
  * Get the list of supported message actions for a specific channel.
  * Returns an empty array if channel is not found or has no actions configured.
@@ -12,7 +13,7 @@ export function listChannelSupportedActions(params) {
     if (!plugin?.actions?.listActions)
         return [];
     const cfg = params.cfg ?? {};
-    return plugin.actions.listActions({ cfg });
+    return runPluginListActions(plugin, cfg);
 }
 /**
  * Get the list of all supported message actions across all configured channels.
@@ -23,7 +24,7 @@ export function listAllChannelSupportedActions(params) {
         if (!plugin.actions?.listActions)
             continue;
         const cfg = params.cfg ?? {};
-        const channelActions = plugin.actions.listActions({ cfg });
+        const channelActions = runPluginListActions(plugin, cfg);
         for (const action of channelActions) {
             actions.add(action);
         }
@@ -56,3 +57,31 @@ export function resolveChannelMessageToolHints(params) {
         .map((entry) => entry.trim())
         .filter(Boolean);
 }
+const loggedListActionErrors = new Set();
+function runPluginListActions(plugin, cfg) {
+    if (!plugin.actions?.listActions)
+        return [];
+    try {
+        const listed = plugin.actions.listActions({ cfg });
+        return Array.isArray(listed) ? listed : [];
+    }
+    catch (err) {
+        logListActionsError(plugin.id, err);
+        return [];
+    }
+}
+function logListActionsError(pluginId, err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const key = `${pluginId}:${message}`;
+    if (loggedListActionErrors.has(key))
+        return;
+    loggedListActionErrors.add(key);
+    const stack = err instanceof Error && err.stack ? err.stack : null;
+    const details = stack ?? message;
+    defaultRuntime.error?.(`[channel-tools] ${pluginId}.actions.listActions failed: ${details}`);
+}
+export const __testing = {
+    resetLoggedListActionErrors() {
+        loggedListActionErrors.clear();
+    },
+};

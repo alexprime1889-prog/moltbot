@@ -45,11 +45,12 @@ export function getTelegramSequentialKey(ctx) {
             return `telegram:${chatId}:control`;
         return "telegram:control";
     }
+    const isGroup = msg?.chat?.type === "group" || msg?.chat?.type === "supergroup";
+    const messageThreadId = msg?.message_thread_id;
     const isForum = msg?.chat?.is_forum;
-    const threadId = resolveTelegramForumThreadId({
-        isForum,
-        messageThreadId: msg?.message_thread_id,
-    });
+    const threadId = isGroup
+        ? resolveTelegramForumThreadId({ isForum, messageThreadId })
+        : messageThreadId;
     if (typeof chatId === "number") {
         return threadId != null ? `telegram:${chatId}:topic:${threadId}` : `telegram:${chatId}`;
     }
@@ -357,7 +358,8 @@ export function createTelegramBot(opts) {
                 peer: { kind: isGroup ? "group" : "dm", id: peerId },
             });
             const baseSessionKey = route.sessionKey;
-            const dmThreadId = !isGroup ? resolvedThreadId : undefined;
+            // DMs: use raw messageThreadId for thread sessions (not resolvedThreadId which is for forums)
+            const dmThreadId = !isGroup ? messageThreadId : undefined;
             const threadKeys = dmThreadId != null
                 ? resolveThreadSessionKeys({ baseSessionKey, threadId: String(dmThreadId) })
                 : null;

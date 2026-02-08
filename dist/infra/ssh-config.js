@@ -48,7 +48,8 @@ export async function resolveSshConfig(target, opts = {}) {
         args.push("-i", opts.identity.trim());
     }
     const userHost = target.user ? `${target.user}@${target.host}` : target.host;
-    args.push(userHost);
+    // Use "--" so userHost can't be parsed as an ssh option.
+    args.push("--", userHost);
     return await new Promise((resolve) => {
         const child = spawn(sshPath, args, {
             stdio: ["ignore", "pipe", "ignore"],

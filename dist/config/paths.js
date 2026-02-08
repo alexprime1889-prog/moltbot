@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 /**
@@ -14,22 +15,36 @@ export const isNixMode = resolveIsNixMode();
 const LEGACY_STATE_DIRNAME = ".clawdbot";
 const NEW_STATE_DIRNAME = ".moltbot";
 const CONFIG_FILENAME = "moltbot.json";
+const LEGACY_CONFIG_FILENAME = "clawdbot.json";
 function legacyStateDir(homedir = os.homedir) {
     return path.join(homedir(), LEGACY_STATE_DIRNAME);
 }
 function newStateDir(homedir = os.homedir) {
     return path.join(homedir(), NEW_STATE_DIRNAME);
 }
+export function resolveLegacyStateDir(homedir = os.homedir) {
+    return legacyStateDir(homedir);
+}
+export function resolveNewStateDir(homedir = os.homedir) {
+    return newStateDir(homedir);
+}
 /**
  * State directory for mutable data (sessions, logs, caches).
  * Can be overridden via MOLTBOT_STATE_DIR (preferred) or CLAWDBOT_STATE_DIR (legacy).
  * Default: ~/.clawdbot (legacy default for compatibility)
+ * If ~/.moltbot exists and ~/.clawdbot does not, prefer ~/.moltbot.
  */
 export function resolveStateDir(env = process.env, homedir = os.homedir) {
     const override = env.MOLTBOT_STATE_DIR?.trim() || env.CLAWDBOT_STATE_DIR?.trim();
     if (override)
         return resolveUserPath(override);
-    return legacyStateDir(homedir);
+    const legacyDir = legacyStateDir(homedir);
+    const newDir = newStateDir(homedir);
+    const hasLegacy = fs.existsSync(legacyDir);
+    const hasNew = fs.existsSync(newDir);
+    if (!hasLegacy && hasNew)
+        return newDir;
+    return legacyDir;
 }
 function resolveUserPath(input) {
     const trimmed = input.trim();
@@ -47,13 +62,61 @@ export const STATE_DIR = resolveStateDir();
  * Can be overridden via MOLTBOT_CONFIG_PATH (preferred) or CLAWDBOT_CONFIG_PATH (legacy).
  * Default: ~/.clawdbot/moltbot.json (or $*_STATE_DIR/moltbot.json)
  */
-export function resolveConfigPath(env = process.env, stateDir = resolveStateDir(env, os.homedir)) {
+export function resolveCanonicalConfigPath(env = process.env, stateDir = resolveStateDir(env, os.homedir)) {
     const override = env.MOLTBOT_CONFIG_PATH?.trim() || env.CLAWDBOT_CONFIG_PATH?.trim();
     if (override)
         return resolveUserPath(override);
     return path.join(stateDir, CONFIG_FILENAME);
 }
-export const CONFIG_PATH = resolveConfigPath();
+/**
+ * Resolve the active config path by preferring existing config candidates
+ * (new/legacy filenames) before falling back to the canonical path.
+ */
+export function resolveConfigPathCandidate(env = process.env, homedir = os.homedir) {
+    const candidates = resolveDefaultConfigCandidates(env, homedir);
+    const existing = candidates.find((candidate) => {
+        try {
+            return fs.existsSync(candidate);
+        }
+        catch {
+            return false;
+        }
+    });
+    if (existing)
+        return existing;
+    return resolveCanonicalConfigPath(env, resolveStateDir(env, homedir));
+}
+/**
+ * Active config path (prefers existing legacy/new config files).
+ */
+export function resolveConfigPath(env = process.env, stateDir = resolveStateDir(env, os.homedir), homedir = os.homedir) {
+    const override = env.MOLTBOT_CONFIG_PATH?.trim() || env.CLAWDBOT_CONFIG_PATH?.trim();
+    if (override)
+        return resolveUserPath(override);
+    const stateOverride = env.MOLTBOT_STATE_DIR?.trim() || env.CLAWDBOT_STATE_DIR?.trim();
+    const candidates = [
+        path.join(stateDir, CONFIG_FILENAME),
+        path.join(stateDir, LEGACY_CONFIG_FILENAME),
+    ];
+    const existing = candidates.find((candidate) => {
+        try {
+            return fs.existsSync(candidate);
+        }
+        catch {
+            return false;
+        }
+    });
+    if (existing)
+        return existing;
+    if (stateOverride)
+        return path.join(stateDir, CONFIG_FILENAME);
+    const defaultStateDir = resolveStateDir(env, homedir);
+    if (path.resolve(stateDir) === path.resolve(defaultStateDir)) {
+        return resolveConfigPathCandidate(env, homedir);
+    }
+    return path.join(stateDir, CONFIG_FILENAME);
+}
+export const CONFIG_PATH = resolveConfigPathCandidate();
 /**
  * Resolve default config path candidates across new + legacy locations.
  * Order: explicit config path → state-dir-derived paths → new default → legacy default.
@@ -66,13 +129,17 @@ export function resolveDefaultConfigCandidates(env = process.env, homedir = os.h
     const moltbotStateDir = env.MOLTBOT_STATE_DIR?.trim();
     if (moltbotStateDir) {
         candidates.push(path.join(resolveUserPath(moltbotStateDir), CONFIG_FILENAME));
+        candidates.push(path.join(resolveUserPath(moltbotStateDir), LEGACY_CONFIG_FILENAME));
     }
     const legacyStateDirOverride = env.CLAWDBOT_STATE_DIR?.trim();
     if (legacyStateDirOverride) {
         candidates.push(path.join(resolveUserPath(legacyStateDirOverride), CONFIG_FILENAME));
+        candidates.push(path.join(resolveUserPath(legacyStateDirOverride), LEGACY_CONFIG_FILENAME));
     }
     candidates.push(path.join(newStateDir(homedir), CONFIG_FILENAME));
+    candidates.push(path.join(newStateDir(homedir), LEGACY_CONFIG_FILENAME));
     candidates.push(path.join(legacyStateDir(homedir), CONFIG_FILENAME));
+    candidates.push(path.join(legacyStateDir(homedir), LEGACY_CONFIG_FILENAME));
     return candidates;
 }
 export const DEFAULT_GATEWAY_PORT = 18789;

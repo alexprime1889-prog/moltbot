@@ -485,7 +485,14 @@ export function attachGatewayWsMessageHandler(params) {
                     close(1008, truncateCloseReason(authMessage));
                     return;
                 }
-                const skipPairing = allowControlUiBypass && hasSharedAuth;
+                // Skip device pairing if:
+                // 1. Control UI bypass is enabled and has shared auth
+                // 2. Connection is from trusted proxy with skipDevicePairingFromTrustedProxy enabled
+                const skipPairingFromControlUi = allowControlUiBypass && hasSharedAuth;
+                const skipPairingFromTrustedProxy = remoteIsTrustedProxy &&
+                    configSnapshot.gateway?.skipDevicePairingFromTrustedProxy === true &&
+                    hasSharedAuth;
+                const skipPairing = skipPairingFromControlUi || skipPairingFromTrustedProxy;
                 if (device && devicePublicKey && !skipPairing) {
                     const requirePairing = async (reason, _paired) => {
                         const pairing = await requestDevicePairing({

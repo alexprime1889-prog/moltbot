@@ -4,7 +4,7 @@ import { parseDurationMs } from "../../../cli/parse-duration.js";
 import { upsertSharedEnvVar } from "../../../infra/env-file.js";
 import { buildTokenProfileId, validateAnthropicSetupToken } from "../../auth-token.js";
 import { applyGoogleGeminiModelDefault } from "../../google-gemini-model-default.js";
-import { applyAuthProfileConfig, applyKimiCodeConfig, applyMinimaxApiConfig, applyMinimaxConfig, applyMoonshotConfig, applyOpencodeZenConfig, applyOpenrouterConfig, applySyntheticConfig, applyVeniceConfig, applyVercelAiGatewayConfig, applyZaiConfig, setAnthropicApiKey, setGeminiApiKey, setKimiCodeApiKey, setMinimaxApiKey, setMoonshotApiKey, setOpencodeZenApiKey, setOpenrouterApiKey, setSyntheticApiKey, setVeniceApiKey, setVercelAiGatewayApiKey, setZaiApiKey, } from "../../onboard-auth.js";
+import { applyAuthProfileConfig, applyKimiCodeConfig, applyMinimaxApiConfig, applyMinimaxConfig, applyMoonshotConfig, applyOpencodeZenConfig, applyOpenrouterConfig, applySyntheticConfig, applyVeniceConfig, applyVercelAiGatewayConfig, applyXiaomiConfig, applyZaiConfig, setAnthropicApiKey, setGeminiApiKey, setKimiCodeApiKey, setMinimaxApiKey, setMoonshotApiKey, setOpencodeZenApiKey, setOpenrouterApiKey, setSyntheticApiKey, setVeniceApiKey, setVercelAiGatewayApiKey, setXiaomiApiKey, setZaiApiKey, } from "../../onboard-auth.js";
 import { resolveNonInteractiveApiKey } from "../api-keys.js";
 import { shortenHomePath } from "../../../utils.js";
 export async function applyNonInteractiveAuthChoice(params) {
@@ -137,6 +137,26 @@ export async function applyNonInteractiveAuthChoice(params) {
             mode: "api_key",
         });
         return applyZaiConfig(nextConfig);
+    }
+    if (authChoice === "xiaomi-api-key") {
+        const resolved = await resolveNonInteractiveApiKey({
+            provider: "xiaomi",
+            cfg: baseConfig,
+            flagValue: opts.xiaomiApiKey,
+            flagName: "--xiaomi-api-key",
+            envVar: "XIAOMI_API_KEY",
+            runtime,
+        });
+        if (!resolved)
+            return null;
+        if (resolved.source !== "profile")
+            await setXiaomiApiKey(resolved.key);
+        nextConfig = applyAuthProfileConfig(nextConfig, {
+            profileId: "xiaomi:default",
+            provider: "xiaomi",
+            mode: "api_key",
+        });
+        return applyXiaomiConfig(nextConfig);
     }
     if (authChoice === "openai-api-key") {
         const resolved = await resolveNonInteractiveApiKey({

@@ -79,6 +79,10 @@ function mergeConfig(defaults, overrides, agentId) {
         modelCacheDir: overrides?.local?.modelCacheDir ?? defaults?.local?.modelCacheDir,
     };
     const sources = normalizeSources(overrides?.sources ?? defaults?.sources, sessionMemory);
+    const rawPaths = [...(defaults?.extraPaths ?? []), ...(overrides?.extraPaths ?? [])]
+        .map((value) => value.trim())
+        .filter(Boolean);
+    const extraPaths = Array.from(new Set(rawPaths));
     const vector = {
         enabled: overrides?.store?.vector?.enabled ?? defaults?.store?.vector?.enabled ?? true,
         extensionPath: overrides?.store?.vector?.extensionPath ?? defaults?.store?.vector?.extensionPath,
@@ -144,6 +148,7 @@ function mergeConfig(defaults, overrides, agentId) {
     return {
         enabled,
         sources,
+        extraPaths,
         provider,
         remote,
         experimental: {

@@ -29,7 +29,7 @@ export function registerOnboardCommand(program) {
         .option("--accept-risk", "Acknowledge that agents are powerful and full system access is risky (required for --non-interactive)", false)
         .option("--flow <flow>", "Wizard flow: quickstart|advanced|manual")
         .option("--mode <mode>", "Wizard mode: local|remote")
-        .option("--auth-choice <choice>", "Auth: setup-token|token|chutes|openai-codex|openai-api-key|openrouter-api-key|ai-gateway-api-key|moonshot-api-key|kimi-code-api-key|synthetic-api-key|venice-api-key|gemini-api-key|zai-api-key|apiKey|minimax-api|minimax-api-lightning|opencode-zen|skip")
+        .option("--auth-choice <choice>", "Auth: setup-token|token|chutes|openai-codex|openai-api-key|openrouter-api-key|ai-gateway-api-key|moonshot-api-key|kimi-code-api-key|synthetic-api-key|venice-api-key|gemini-api-key|zai-api-key|xiaomi-api-key|apiKey|minimax-api|minimax-api-lightning|opencode-zen|skip")
         .option("--token-provider <id>", "Token provider id (non-interactive; used with --auth-choice token)")
         .option("--token <token>", "Token value (non-interactive; used with --auth-choice token)")
         .option("--token-profile-id <id>", "Auth profile id (non-interactive; default: <provider>:manual)")
@@ -42,6 +42,7 @@ export function registerOnboardCommand(program) {
         .option("--kimi-code-api-key <key>", "Kimi Code API key")
         .option("--gemini-api-key <key>", "Gemini API key")
         .option("--zai-api-key <key>", "Z.AI API key")
+        .option("--xiaomi-api-key <key>", "Xiaomi API key")
         .option("--minimax-api-key <key>", "MiniMax API key")
         .option("--synthetic-api-key <key>", "Synthetic API key")
         .option("--venice-api-key <key>", "Venice API key")
@@ -90,6 +91,7 @@ export function registerOnboardCommand(program) {
                 kimiCodeApiKey: opts.kimiCodeApiKey,
                 geminiApiKey: opts.geminiApiKey,
                 zaiApiKey: opts.zaiApiKey,
+                xiaomiApiKey: opts.xiaomiApiKey,
                 minimaxApiKey: opts.minimaxApiKey,
                 syntheticApiKey: opts.syntheticApiKey,
                 veniceApiKey: opts.veniceApiKey,

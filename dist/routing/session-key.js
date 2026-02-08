@@ -99,6 +99,11 @@ export function buildAgentPeerSessionKey(params) {
         if (linkedPeerId)
             peerId = linkedPeerId;
         peerId = peerId.toLowerCase();
+        if (dmScope === "per-account-channel-peer" && peerId) {
+            const channel = (params.channel ?? "").trim().toLowerCase() || "unknown";
+            const accountId = normalizeAccountId(params.accountId);
+            return `agent:${normalizeAgentId(params.agentId)}:${channel}:${accountId}:dm:${peerId}`;
+        }
         if (dmScope === "per-channel-peer" && peerId) {
             const channel = (params.channel ?? "").trim().toLowerCase() || "unknown";
             return `agent:${normalizeAgentId(params.agentId)}:${channel}:dm:${peerId}`;

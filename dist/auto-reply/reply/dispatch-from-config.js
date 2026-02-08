@@ -225,6 +225,27 @@ export async function dispatchReplyFromConfig(params) {
         let blockCount = 0;
         const replyResult = await (params.replyResolver ?? getReplyFromConfig)(ctx, {
             ...params.replyOptions,
+            onToolResult: ctx.ChatType !== "group" && ctx.CommandSource !== "native"
+                ? (payload) => {
+                    const run = async () => {
+                        const ttsPayload = await maybeApplyTtsToPayload({
+                            payload,
+                            cfg,
+                            channel: ttsChannel,
+                            kind: "tool",
+                            inboundAudio,
+                            ttsAuto: sessionTtsAuto,
+                        });
+                        if (shouldRouteToOriginating) {
+                            await sendPayloadAsync(ttsPayload, undefined, false);
+                        }
+                        else {
+                            dispatcher.sendToolResult(ttsPayload);
+                        }
+                    };
+                    return run();
+                }
+                : undefined,
             onBlockReply: (payload, context) => {
                 const run = async () => {
                     // Accumulate block text for TTS generation after streaming

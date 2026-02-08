@@ -20,6 +20,10 @@ export async function deliverReplies(params) {
     const { replies, chatId, runtime, bot, replyToMode, textLimit, messageThreadId, linkPreview, replyQuoteText, } = params;
     const chunkMode = params.chunkMode ?? "length";
     let hasReplied = false;
+    let hasDelivered = false;
+    const markDelivered = () => {
+        hasDelivered = true;
+    };
     const chunkText = (markdown) => {
         const markdownChunks = chunkMode === "newline"
             ? chunkMarkdownTextWithMode(markdown, textLimit, chunkMode)
@@ -73,6 +77,7 @@ export async function deliverReplies(params) {
                     linkPreview,
                     replyMarkup: shouldAttachButtons ? replyMarkup : undefined,
                 });
+                markDelivered();
                 if (replyToId && !hasReplied) {
                     hasReplied = true;
                 }
@@ -121,6 +126,7 @@ export async function deliverReplies(params) {
                     runtime,
                     fn: () => bot.api.sendAnimation(chatId, file, { ...mediaParams }),
                 });
+                markDelivered();
             }
             else if (kind === "image") {
                 await withTelegramApiErrorLogging({
@@ -128,6 +134,7 @@ export async function deliverReplies(params) {
                     runtime,
                     fn: () => bot.api.sendPhoto(chatId, file, { ...mediaParams }),
                 });
+                markDelivered();
             }
             else if (kind === "video") {
                 await withTelegramApiErrorLogging({
@@ -135,6 +142,7 @@ export async function deliverReplies(params) {
                     runtime,
                     fn: () => bot.api.sendVideo(chatId, file, { ...mediaParams }),
                 });
+                markDelivered();
             }
             else if (kind === "audio") {
                 const { useVoice } = resolveTelegramVoiceSend({
@@ -154,6 +162,7 @@ export async function deliverReplies(params) {
                             shouldLog: (err) => !isVoiceMessagesForbidden(err),
                             fn: () => bot.api.sendVoice(chatId, file, { ...mediaParams }),
                         });
+                        markDelivered();
                     }
                     catch (voiceErr) {
                         // Fall back to text if voice messages are forbidden in this chat.
@@ -179,6 +188,7 @@ export async function deliverReplies(params) {
                                 replyMarkup,
                                 replyQuoteText,
                             });
+                            markDelivered();
                             // Skip this media item; continue with next.
                             continue;
                         }
@@ -192,6 +202,7 @@ export async function deliverReplies(params) {
                         runtime,
                         fn: () => bot.api.sendAudio(chatId, file, { ...mediaParams }),
                     });
+                    markDelivered();
                 }
             }
             else {
@@ -200,6 +211,7 @@ export async function deliverReplies(params) {
                     runtime,
                     fn: () => bot.api.sendDocument(chatId, file, { ...mediaParams }),
                 });
+                markDelivered();
             }
             if (replyToId && !hasReplied) {
                 hasReplied = true;
@@ -219,6 +231,7 @@ export async function deliverReplies(params) {
                         linkPreview,
                         replyMarkup: i === 0 ? replyMarkup : undefined,
                     });
+                    markDelivered();
                     if (replyToId && !hasReplied) {
                         hasReplied = true;
                     }
@@ -227,6 +240,7 @@ export async function deliverReplies(params) {
             }
         }
     }
+    return { delivered: hasDelivered };
 }
 export async function resolveMedia(ctx, maxBytes, token, proxyFetch) {
     const msg = ctx.message;
@@ -257,7 +271,8 @@ export async function resolveMedia(ctx, maxBytes, token, proxyFetch) {
                 fetchImpl,
                 filePathHint: file.file_path,
             });
-            const saved = await saveMediaBuffer(fetched.buffer, fetched.contentType, "inbound", maxBytes);
+            const originalName = fetched.fileName ?? file.file_path;
+            const saved = await saveMediaBuffer(fetched.buffer, fetched.contentType, "inbound", maxBytes, originalName);
             // Check sticker cache for existing description
             const cached = sticker.file_unique_id ? getCachedSticker(sticker.file_unique_id) : null;
             if (cached) {
@@ -305,7 +320,12 @@ export async function resolveMedia(ctx, maxBytes, token, proxyFetch) {
             return null;
         }
     }
-    const m = msg.photo?.[msg.photo.length - 1] ?? msg.video ?? msg.document ?? msg.audio ?? msg.voice;
+    const m = msg.photo?.[msg.photo.length - 1] ??
+        msg.video ??
+        msg.video_note ??
+        msg.document ??
+        msg.audio ??
+        msg.voice;
     if (!m?.file_id)
         return null;
     const file = await ctx.getFile();
@@ -322,11 +342,14 @@ export async function resolveMedia(ctx, maxBytes, token, proxyFetch) {
         fetchImpl,
         filePathHint: file.file_path,
     });
-    const saved = await saveMediaBuffer(fetched.buffer, fetched.contentType, "inbound", maxBytes);
+    const originalName = fetched.fileName ?? file.file_path;
+    const saved = await saveMediaBuffer(fetched.buffer, fetched.contentType, "inbound", maxBytes, originalName);
     let placeholder = "<media:document>";
     if (msg.photo)
         placeholder = "<media:image>";
     else if (msg.video)
+        placeholder = "<media:video>";
+    else if (msg.video_note)
         placeholder = "<media:video>";
     else if (msg.audio || msg.voice)
         placeholder = "<media:audio>";

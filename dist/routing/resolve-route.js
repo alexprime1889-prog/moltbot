@@ -27,6 +27,7 @@ export function buildAgentSessionKey(params) {
         agentId: params.agentId,
         mainKey: DEFAULT_MAIN_KEY,
         channel,
+        accountId: params.accountId,
         peerKind: peer?.kind ?? "dm",
         peerId: peer ? normalizeId(peer.id) || "unknown" : null,
         dmScope: params.dmScope,
@@ -98,6 +99,7 @@ export function resolveAgentRoute(input) {
         const sessionKey = buildAgentSessionKey({
             agentId: resolvedAgentId,
             channel,
+            accountId,
             peer,
             dmScope,
             identityLinks,

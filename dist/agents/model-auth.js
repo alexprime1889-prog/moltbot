@@ -211,6 +211,7 @@ export function resolveEnvApiKey(provider) {
         moonshot: "MOONSHOT_API_KEY",
         "kimi-code": "KIMICODE_API_KEY",
         minimax: "MINIMAX_API_KEY",
+        xiaomi: "XIAOMI_API_KEY",
         synthetic: "SYNTHETIC_API_KEY",
         venice: "VENICE_API_KEY",
         mistral: "MISTRAL_API_KEY",

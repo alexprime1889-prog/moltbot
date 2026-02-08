@@ -48,6 +48,66 @@ export const normalizePluginsConfig = (config) => {
         entries: normalizePluginEntries(config?.entries),
     };
 };
+const hasExplicitMemorySlot = (plugins) => Boolean(plugins?.slots && Object.prototype.hasOwnProperty.call(plugins.slots, "memory"));
+const hasExplicitMemoryEntry = (plugins) => Boolean(plugins?.entries && Object.prototype.hasOwnProperty.call(plugins.entries, "memory-core"));
+const hasExplicitPluginConfig = (plugins) => {
+    if (!plugins)
+        return false;
+    if (typeof plugins.enabled === "boolean")
+        return true;
+    if (Array.isArray(plugins.allow) && plugins.allow.length > 0)
+        return true;
+    if (Array.isArray(plugins.deny) && plugins.deny.length > 0)
+        return true;
+    if (plugins.load?.paths && Array.isArray(plugins.load.paths) && plugins.load.paths.length > 0)
+        return true;
+    if (plugins.slots && Object.keys(plugins.slots).length > 0)
+        return true;
+    if (plugins.entries && Object.keys(plugins.entries).length > 0)
+        return true;
+    return false;
+};
+export function applyTestPluginDefaults(cfg, env = process.env) {
+    if (!env.VITEST)
+        return cfg;
+    const plugins = cfg.plugins;
+    const explicitConfig = hasExplicitPluginConfig(plugins);
+    if (explicitConfig) {
+        if (hasExplicitMemorySlot(plugins) || hasExplicitMemoryEntry(plugins)) {
+            return cfg;
+        }
+        return {
+            ...cfg,
+            plugins: {
+                ...plugins,
+                slots: {
+                    ...plugins?.slots,
+                    memory: "none",
+                },
+            },
+        };
+    }
+    return {
+        ...cfg,
+        plugins: {
+            ...plugins,
+            enabled: false,
+            slots: {
+                ...plugins?.slots,
+                memory: "none",
+            },
+        },
+    };
+}
+export function isTestDefaultMemorySlotDisabled(cfg, env = process.env) {
+    if (!env.VITEST)
+        return false;
+    const plugins = cfg.plugins;
+    if (hasExplicitMemorySlot(plugins) || hasExplicitMemoryEntry(plugins)) {
+        return false;
+    }
+    return true;
+}
 export function resolveEnableState(id, origin, config) {
     if (!config.enabled) {
         return { enabled: false, reason: "plugins disabled" };

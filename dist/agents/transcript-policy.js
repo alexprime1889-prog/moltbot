@@ -30,7 +30,8 @@ function isAnthropicApi(modelApi, provider) {
     if (modelApi === "anthropic-messages")
         return true;
     const normalized = normalizeProviderId(provider ?? "");
-    return normalized === "anthropic" || normalized === "minimax";
+    // MiniMax now uses openai-completions API, not anthropic-messages
+    return normalized === "anthropic";
 }
 function isMistralModel(params) {
     const provider = normalizeProviderId(params.provider ?? "");

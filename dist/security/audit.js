@@ -405,7 +405,7 @@ async function collectChannelSecurityFindings(params) {
                 severity: "warn",
                 title: `${input.label} DMs share the main session`,
                 detail: "Multiple DM senders currently share the main session, which can leak context across users.",
-                remediation: 'Set session.dmScope="per-channel-peer" to isolate DM sessions per sender.',
+                remediation: 'Set session.dmScope="per-channel-peer" (or "per-account-channel-peer" for multi-account channels) to isolate DM sessions per sender.',
             });
         }
     };

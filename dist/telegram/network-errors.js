@@ -14,6 +14,8 @@ const RECOVERABLE_ERROR_CODES = new Set([
     "UND_ERR_BODY_TIMEOUT",
     "UND_ERR_SOCKET",
     "UND_ERR_ABORTED",
+    "ECONNABORTED",
+    "ERR_NETWORK",
 ]);
 const RECOVERABLE_ERROR_NAMES = new Set([
     "AbortError",
@@ -24,6 +26,8 @@ const RECOVERABLE_ERROR_NAMES = new Set([
 ]);
 const RECOVERABLE_MESSAGE_SNIPPETS = [
     "fetch failed",
+    "typeerror: fetch failed",
+    "undici",
     "network error",
     "network request",
     "client network socket disconnected",

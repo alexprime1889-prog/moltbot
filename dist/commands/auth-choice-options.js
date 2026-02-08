@@ -72,6 +72,12 @@ const AUTH_CHOICE_GROUP_DEFS = [
         choices: ["zai-api-key"],
     },
     {
+        value: "xiaomi",
+        label: "Xiaomi",
+        hint: "API key",
+        choices: ["xiaomi-api-key"],
+    },
+    {
         value: "opencode-zen",
         label: "OpenCode Zen",
         hint: "API key",
@@ -122,6 +128,10 @@ export function buildAuthChoiceOptions(params) {
         hint: "Uses the bundled Gemini CLI auth plugin",
     });
     options.push({ value: "zai-api-key", label: "Z.AI (GLM 4.7) API key" });
+    options.push({
+        value: "xiaomi-api-key",
+        label: "Xiaomi API key",
+    });
     options.push({ value: "qwen-portal", label: "Qwen OAuth" });
     options.push({
         value: "copilot-proxy",

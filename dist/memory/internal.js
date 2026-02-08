@@ -13,6 +13,15 @@ export function normalizeRelPath(value) {
     const trimmed = value.trim().replace(/^[./]+/, "");
     return trimmed.replace(/\\/g, "/");
 }
+export function normalizeExtraMemoryPaths(workspaceDir, extraPaths) {
+    if (!extraPaths?.length)
+        return [];
+    const resolved = extraPaths
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .map((value) => path.isAbsolute(value) ? path.resolve(value) : path.resolve(workspaceDir, value));
+    return Array.from(new Set(resolved));
+}
 export function isMemoryPath(relPath) {
     const normalized = normalizeRelPath(relPath);
     if (!normalized)
@@ -21,19 +30,12 @@ export function isMemoryPath(relPath) {
         return true;
     return normalized.startsWith("memory/");
 }
-async function exists(filePath) {
-    try {
-        await fs.access(filePath);
-        return true;
-    }
-    catch {
-        return false;
-    }
-}
 async function walkDir(dir, files) {
     const entries = await fs.readdir(dir, { withFileTypes: true });
     for (const entry of entries) {
         const full = path.join(dir, entry.name);
+        if (entry.isSymbolicLink())
+            continue;
         if (entry.isDirectory()) {
             await walkDir(full, files);
             continue;
@@ -45,17 +47,48 @@ async function walkDir(dir, files) {
         files.push(full);
     }
 }
-export async function listMemoryFiles(workspaceDir) {
+export async function listMemoryFiles(workspaceDir, extraPaths) {
     const result = [];
     const memoryFile = path.join(workspaceDir, "MEMORY.md");
     const altMemoryFile = path.join(workspaceDir, "memory.md");
-    if (await exists(memoryFile))
-        result.push(memoryFile);
-    if (await exists(altMemoryFile))
-        result.push(altMemoryFile);
     const memoryDir = path.join(workspaceDir, "memory");
-    if (await exists(memoryDir)) {
-        await walkDir(memoryDir, result);
+    const addMarkdownFile = async (absPath) => {
+        try {
+            const stat = await fs.lstat(absPath);
+            if (stat.isSymbolicLink() || !stat.isFile())
+                return;
+            if (!absPath.endsWith(".md"))
+                return;
+            result.push(absPath);
+        }
+        catch { }
+    };
+    await addMarkdownFile(memoryFile);
+    await addMarkdownFile(altMemoryFile);
+    try {
+        const dirStat = await fs.lstat(memoryDir);
+        if (!dirStat.isSymbolicLink() && dirStat.isDirectory()) {
+            await walkDir(memoryDir, result);
+        }
+    }
+    catch { }
+    const normalizedExtraPaths = normalizeExtraMemoryPaths(workspaceDir, extraPaths);
+    if (normalizedExtraPaths.length > 0) {
+        for (const inputPath of normalizedExtraPaths) {
+            try {
+                const stat = await fs.lstat(inputPath);
+                if (stat.isSymbolicLink())
+                    continue;
+                if (stat.isDirectory()) {
+                    await walkDir(inputPath, result);
+                    continue;
+                }
+                if (stat.isFile() && inputPath.endsWith(".md")) {
+                    result.push(inputPath);
+                }
+            }
+            catch { }
+        }
     }
     if (result.length <= 1)
         return result;

@@ -7,6 +7,7 @@ export const PROVIDER_LABELS = {
     "google-antigravity": "Antigravity",
     minimax: "MiniMax",
     "openai-codex": "Codex",
+    xiaomi: "Xiaomi",
     zai: "z.ai",
 };
 export const usageProviders = [
@@ -16,6 +17,7 @@ export const usageProviders = [
     "google-antigravity",
     "minimax",
     "openai-codex",
+    "xiaomi",
     "zai",
 ];
 export function resolveUsageProviderId(provider) {

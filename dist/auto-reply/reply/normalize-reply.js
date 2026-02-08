@@ -7,13 +7,17 @@ export function normalizeReplyPayload(payload, opts = {}) {
     const hasMedia = Boolean(payload.mediaUrl || (payload.mediaUrls?.length ?? 0) > 0);
     const hasChannelData = Boolean(payload.channelData && Object.keys(payload.channelData).length > 0);
     const trimmed = payload.text?.trim() ?? "";
-    if (!trimmed && !hasMedia && !hasChannelData)
+    if (!trimmed && !hasMedia && !hasChannelData) {
+        opts.onSkip?.("empty");
         return null;
+    }
     const silentToken = opts.silentToken ?? SILENT_REPLY_TOKEN;
     let text = payload.text ?? undefined;
     if (text && isSilentReplyText(text, silentToken)) {
-        if (!hasMedia && !hasChannelData)
+        if (!hasMedia && !hasChannelData) {
+            opts.onSkip?.("silent");
             return null;
+        }
         text = "";
     }
     if (text && !trimmed) {
@@ -25,15 +29,19 @@ export function normalizeReplyPayload(payload, opts = {}) {
         const stripped = stripHeartbeatToken(text, { mode: "message" });
         if (stripped.didStrip)
             opts.onHeartbeatStrip?.();
-        if (stripped.shouldSkip && !hasMedia && !hasChannelData)
+        if (stripped.shouldSkip && !hasMedia && !hasChannelData) {
+            opts.onSkip?.("heartbeat");
             return null;
+        }
         text = stripped.text;
     }
     if (text) {
         text = sanitizeUserFacingText(text);
     }
-    if (!text?.trim() && !hasMedia && !hasChannelData)
+    if (!text?.trim() && !hasMedia && !hasChannelData) {
+        opts.onSkip?.("empty");
         return null;
+    }
     // Parse LINE-specific directives from text (quick_replies, location, confirm, buttons)
     let enrichedPayload = { ...payload, text };
     if (text && hasLineDirectives(text)) {
