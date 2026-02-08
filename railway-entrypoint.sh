@@ -73,7 +73,7 @@ else
       log "Appended missing --port ${PORT}."
     fi
     if [ "${has_bind}" -eq 0 ]; then
-      BIND_MODE="${MOLTBOT_GATEWAY_BIND:-lan}"
+      BIND_MODE="${MOLTBOT_GATEWAY_BIND:-0.0.0.0}"
       set -- "$@" --bind "${BIND_MODE}"
       log "Appended missing --bind ${BIND_MODE}."
     fi
