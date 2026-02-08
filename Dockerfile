@@ -2,6 +2,9 @@ FROM node:22-slim
 
 WORKDIR /app
 
+# Skip postinstall scripts during build
+ENV CLAWDBOT_SKIP_POSTINSTALL=1
+
 # Install pnpm
 RUN npm install -g pnpm
 
