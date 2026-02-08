@@ -56,6 +56,12 @@ RUN npx playwright install chromium --with-deps || echo "Playwright install fail
 ENV CLAWDBOT_NO_RESPAWN=1
 ENV NODE_OPTIONS="--disable-warning=ExperimentalWarning"
 ENV CLAWDBOT_STATE_DIR=/app/.state
+ENV GATEWAY_MODE=local
+ENV OPENCLAW_GATEWAY_MODE=local
+ENV MOLTBOT_GATEWAY_MODE=local
+ENV CLAWDBOT_ALLOW_UNCONFIGURED=true
+ENV MOLTBOT_ALLOW_UNCONFIGURED=true
+ENV OPENCLAW_ALLOW_UNCONFIGURED=true
 RUN mkdir -p /app/.state
 
 # Railway will inject PORT env var at runtime
