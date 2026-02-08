@@ -12,8 +12,8 @@ ENV CLAWDBOT_SKIP_POSTINSTALL=1
 # Skip A2UI bundle check in Docker (sources excluded by .dockerignore)
 ENV CLAWDBOT_A2UI_SKIP_MISSING=1
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install pnpm and typescript (for build)
+RUN npm install -g pnpm typescript tsx
 
 # Copy root package files
 COPY package.json ./
