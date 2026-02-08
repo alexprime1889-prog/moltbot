@@ -11,8 +11,8 @@ tsc -p tsconfig.json || echo "TypeScript compilation completed with errors, cont
 
 # Copy files and write build info
 echo "Copying files and writing build info..."
-./node_modules/.bin/tsx scripts/canvas-a2ui-copy.ts
-./node_modules/.bin/tsx scripts/copy-hook-metadata.ts
-./node_modules/.bin/tsx scripts/write-build-info.ts
+npx tsx scripts/canvas-a2ui-copy.ts
+npx tsx scripts/copy-hook-metadata.ts
+npx tsx scripts/write-build-info.ts
 
 echo "Build completed"
