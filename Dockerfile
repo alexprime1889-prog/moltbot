@@ -21,6 +21,9 @@ COPY . .
 # Build the project
 RUN pnpm build
 
+# Build UI assets (needed for gateway control panel)
+RUN pnpm ui:build
+
 # Expose port
 EXPOSE 8080
 
