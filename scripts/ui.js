@@ -54,7 +54,7 @@ function run(cmd, args) {
   const child = spawn(cmd, args, {
     cwd: uiDir,
     stdio: "inherit",
-    env: { ...process.env, CI: "true" },
+    env: { ...process.env, CI: "true", PNPM_CONFIRM_MODULES_DIR: "false" },
     shell: process.platform === "win32",
   });
   child.on("exit", (code, signal) => {
@@ -67,7 +67,7 @@ function runSync(cmd, args, envOverride) {
   const result = spawnSync(cmd, args, {
     cwd: uiDir,
     stdio: "inherit",
-    env: { CI: "true", ...process.env, ...envOverride },
+    env: { CI: "true", PNPM_CONFIRM_MODULES_DIR: "false", ...process.env, ...envOverride },
     shell: process.platform === "win32",
   });
   if (result.signal) process.exit(1);
