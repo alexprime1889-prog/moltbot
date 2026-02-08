@@ -38,6 +38,9 @@ apps/ios/build
 **/*.trace
 
 # large app trees not needed for CLI build
+# But include A2UI sources for bundle
+!apps/shared/MoltbotKit/Tools/CanvasA2UI
+!vendor/a2ui/renderers/lit
 apps/
 assets/
 Peekaboo/
