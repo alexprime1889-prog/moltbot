@@ -1,5 +1,8 @@
 FROM node:22-slim
 
+# Install pnpm
+RUN npm install -g pnpm
+
 WORKDIR /app
 
 COPY . .
