@@ -1,0 +1,14 @@
+[phases.build]
+cmds = [
+  "npm install -g pnpm",
+  "pnpm install --frozen-lockfile --ignore-scripts || pnpm install --ignore-scripts",
+  "cd ui && pnpm install --frozen-lockfile --ignore-scripts || pnpm install --ignore-scripts",
+  "pnpm ui:build",
+  "pnpm build"
+]
+
+[phases.setup]
+nixPkgs = ["nodejs_22"]
+
+[start]
+cmd = "./railway-entrypoint.sh"
