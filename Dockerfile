@@ -20,6 +20,9 @@ RUN pnpm install --frozen-lockfile --ignore-scripts || pnpm install --ignore-scr
 # Copy source code
 COPY . .
 
+# Install UI dependencies (needed for ui:build)
+RUN cd ui && pnpm install --frozen-lockfile --ignore-scripts || cd ui && pnpm install --ignore-scripts
+
 # Build the project
 RUN pnpm build
 
