@@ -37,6 +37,10 @@ RUN pnpm build
 # Set production env for runtime
 ENV NODE_ENV=production
 
+# Create config directory and copy minimal config for gateway mode=local
+RUN mkdir -p /root/.config/moltbot
+COPY config.json /root/.config/moltbot/config.json
+
 # Expose port
 EXPOSE 8080
 
