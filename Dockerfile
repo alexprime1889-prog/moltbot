@@ -68,10 +68,10 @@ RUN mkdir -p /app/.state
 EXPOSE 8080
 
 # Cache bust for Railway (change this to force rebuild)
-ARG CACHE_BUST=2026020707
+ARG CACHE_BUST=2026020708
 
 # Startup: configure gateway for Railway and launch
 # - trustedProxies: Railway internal network (100.64.0.0/16)
 # - skipDevicePairingFromTrustedProxy: allow CLI connections
 # - browser.profiles.kernel: Kernel cloud browser driver
-CMD ["/bin/sh", "-c", "echo '=== Gateway Startup ===' && echo \"Node: $(node --version)\" && echo \"Port: 8080\" && echo \"Token: ${CLAWDBOT_GATEWAY_TOKEN:+SET}\" && mkdir -p /app/.state && echo '{\"gateway\":{\"mode\":\"local\",\"trustedProxies\":[\"100.64.0.0/16\",\"10.0.0.0/8\"],\"skipDevicePairingFromTrustedProxy\":true},\"browser\":{\"defaultProfile\":\"kernel\",\"profiles\":{\"kernel\":{\"driver\":\"kernel\",\"color\":\"#9B59B6\"}}}}' > /app/.state/moltbot.json && echo '=== Config Created ===' && cat /app/.state/moltbot.json && echo '=== Starting Gateway ===' && exec node moltbot.mjs --allow-unconfigured gateway --port 8080 --bind lan"]
+CMD ["/bin/sh", "-c", "echo '=== Gateway Startup ===' && echo \"Node: $(node --version)\" && echo \"Port: 8080\" && echo \"Token: ${CLAWDBOT_GATEWAY_TOKEN:+SET}\" && echo \"STATE_DIR: ${CLAWDBOT_STATE_DIR}\" && echo \"MOLTBOT_STATE_DIR: ${MOLTBOT_STATE_DIR}\" && echo \"OPENCLAW_STATE_DIR: ${OPENCLAW_STATE_DIR}\" && echo \"ALLOW_UNCONFIGURED: ${MOLTBOT_ALLOW_UNCONFIGURED}\" && echo \"GATEWAY_MODE: ${GATEWAY_MODE}\" && mkdir -p /app/.state && echo '{\"gateway\":{\"mode\":\"local\",\"trustedProxies\":[\"100.64.0.0/16\",\"10.0.0.0/8\"],\"skipDevicePairingFromTrustedProxy\":true},\"browser\":{\"defaultProfile\":\"kernel\",\"profiles\":{\"kernel\":{\"driver\":\"kernel\",\"color\":\"#9B59B6\"}}}}' > /app/.state/moltbot.json && echo '=== Config Created ===' && cat /app/.state/moltbot.json && ls -la /app/.state/ && echo '=== Starting Gateway ===' && exec node moltbot.mjs --allow-unconfigured gateway --port 8080 --bind lan"]
