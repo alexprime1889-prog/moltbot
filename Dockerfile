@@ -13,7 +13,7 @@ ENV CLAWDBOT_SKIP_POSTINSTALL=1
 ENV CLAWDBOT_A2UI_SKIP_MISSING=1
 
 # Install pnpm and typescript (for build)
-RUN npm install -g pnpm typescript tsx
+RUN npm install -g pnpm typescript
 
 # Copy root package files
 COPY package.json ./
