@@ -4,7 +4,7 @@
     "builder": "DOCKERFILE"
   },
   "deploy": {
-    "startCommand": "node moltbot.mjs --allow-unconfigured gateway --port 8080 --bind lan",
+    "startCommand": "mkdir -p /app/.state && echo '{\"gateway\":{\"mode\":\"local\",\"trustedProxies\":[\"100.64.0.0/16\",\"10.0.0.0/8\"],\"skipDevicePairingFromTrustedProxy\":true}}' > /app/.state/moltbot.json && exec node moltbot.mjs gateway --port 8080 --bind lan",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }
