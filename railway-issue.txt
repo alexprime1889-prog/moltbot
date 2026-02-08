@@ -1,0 +1,1 @@
+Railway infrastructure issue: Gateway crashes with 'Missing config' error despite multiple fix attempts. Railway CLI has network connectivity issues preventing manual deploy. Need to investigate Railway service configuration or switch to alternative deployment platform.

@@ -67,13 +67,15 @@ RUN mkdir -p /app/.state
 # Railway will inject PORT env var at runtime
 EXPOSE 8080
 
+# Copy and set up entrypoint script
+COPY railway-entrypoint.sh /app/railway-entrypoint.sh
+RUN chmod +x /app/railway-entrypoint.sh
+
 # Cache bust for Railway (change this to force rebuild)
-ARG CACHE_BUST=2026020708
+ARG CACHE_BUST=2026020709
 # Force rebuild
 RUN echo "Rebuild forced at $(date)" > /tmp/rebuild.txt
 
-# Startup: configure gateway for Railway and launch
-# - trustedProxies: Railway internal network (100.64.0.0/16)
-# - skipDevicePairingFromTrustedProxy: allow CLI connections
-# - browser.profiles.kernel: Kernel cloud browser driver
-CMD ["/bin/sh", "-c", "echo '=== TEST: Railway CMD Override Check ===' && echo 'This should be visible if Railway is not overriding CMD' && echo 'Node: $(node --version)' && echo 'Testing simple command...' && echo 'SUCCESS: CMD executed' && sleep 5 && echo '=== END TEST ==='"]
+# Use entrypoint script as CMD
+# This should bypass Railway's CMD override
+CMD ["/app/railway-entrypoint.sh"]
