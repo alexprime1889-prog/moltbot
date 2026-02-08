@@ -12,6 +12,7 @@ primary_region = "iad"  # change to your closest region
   # Fly uses x86, but keep this for consistency
   CLAWDBOT_PREFER_PNPM = "1"
   CLAWDBOT_STATE_DIR = "/data"
+  MOLTBOT_CONFIG_PATH = "/app/config.json"
   NODE_OPTIONS = "--max-old-space-size=1536"
 
 [processes]

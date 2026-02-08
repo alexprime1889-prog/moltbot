@@ -37,9 +37,9 @@ RUN ./scripts/docker-build.sh
 # Set production env for runtime
 ENV NODE_ENV=production
 
-# Create config directory and copy minimal config for gateway mode=local
-RUN mkdir -p /root/.config/moltbot
-COPY config.json /root/.config/moltbot/config.json
+# Copy minimal config for gateway mode=local
+# Config path set via MOLTBOT_CONFIG_PATH env in fly.toml
+COPY config.json /app/config.json
 
 # Expose port
 EXPOSE 8080
