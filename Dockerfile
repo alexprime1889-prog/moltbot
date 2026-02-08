@@ -78,10 +78,11 @@ COPY railway-entrypoint.sh /app/railway-entrypoint.sh
 RUN chmod +x /app/railway-entrypoint.sh
 
 # Cache bust for Railway (change this to force rebuild)
-ARG CACHE_BUST=2026020719
+ARG CACHE_BUST=202602071950
 # Force rebuild
 RUN echo "Rebuild forced at $(date)" > /tmp/rebuild.txt
 
-# Use entrypoint script as CMD
-# This should bypass Railway's CMD override
-CMD ["/app/railway-entrypoint.sh"]
+# Use explicit command to bypass Railway CMD override
+# Railway often overrides CMD, so we use ENTRYPOINT + explicit args
+ENTRYPOINT ["/app/railway-entrypoint.sh"]
+CMD ["gateway", "run", "--allow-unconfigured", "--port", "8080", "--bind", "lan"]
