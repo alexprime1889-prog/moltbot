@@ -69,6 +69,8 @@ EXPOSE 8080
 
 # Cache bust for Railway (change this to force rebuild)
 ARG CACHE_BUST=2026020708
+# Force rebuild
+RUN echo "Rebuild forced at $(date)" > /tmp/rebuild.txt
 
 # Startup: configure gateway for Railway and launch
 # - trustedProxies: Railway internal network (100.64.0.0/16)
