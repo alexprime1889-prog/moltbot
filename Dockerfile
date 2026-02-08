@@ -49,6 +49,12 @@ RUN echo "=== Building Control UI ===" && \
     echo "=== UI Build Complete ===" && \
     ls -la ../dist/control-ui/
 
+# Build the main application (CRITICAL - compiles TypeScript to dist/)
+RUN echo "=== Building Main Application ===" && \
+    pnpm build && \
+    echo "=== Build Complete ===" && \
+    ls -la dist/index.js || (echo "ERROR: dist/index.js not found!" && exit 1)
+
 # Install Playwright browsers
 RUN npx playwright install chromium --with-deps || echo "Playwright install failed (optional)"
 
@@ -72,7 +78,7 @@ COPY railway-entrypoint.sh /app/railway-entrypoint.sh
 RUN chmod +x /app/railway-entrypoint.sh
 
 # Cache bust for Railway (change this to force rebuild)
-ARG CACHE_BUST=2026020709
+ARG CACHE_BUST=2026020719
 # Force rebuild
 RUN echo "Rebuild forced at $(date)" > /tmp/rebuild.txt
 
