@@ -4,7 +4,7 @@ node_modules
 docker-compose.extra.yml
 # dist - removed to allow git dependency to include prebuilt files
 *.bun-build
-pnpm-lock.yaml
+# pnpm-lock.yaml - commented out to allow Railway builds
 bun.lock
 bun.lockb
 coverage
