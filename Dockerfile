@@ -2,12 +2,15 @@ FROM node:22-slim
 
 WORKDIR /app
 
+# Build args and env for CI
+ARG CI=true
+ENV CI=true
+ENV NODE_ENV=production
+
 # Skip postinstall scripts during build
 ENV CLAWDBOT_SKIP_POSTINSTALL=1
 # Skip A2UI bundle check in Docker (sources excluded by .dockerignore)
 ENV CLAWDBOT_A2UI_SKIP_MISSING=1
-# Fix for pnpm TTY issue in Docker builds
-ENV CI=true
 
 # Install pnpm
 RUN npm install -g pnpm
@@ -29,7 +32,7 @@ RUN cd ui && pnpm install --frozen-lockfile --ignore-scripts || cd ui && pnpm in
 RUN pnpm build
 
 # Build UI assets (needed for gateway control panel)
-RUN pnpm ui:build
+RUN CI=true pnpm ui:build
 
 # Expose port
 EXPOSE 8080
