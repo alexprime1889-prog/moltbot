@@ -1,7 +1,7 @@
 # Moltbot Fly.io deployment configuration
 # See https://fly.io/docs/reference/configuration/
 
-app = "moltbot"
+app = "moltbot-gw"
 primary_region = "iad"  # change to your closest region
 
 [build]
@@ -15,7 +15,7 @@ primary_region = "iad"  # change to your closest region
   NODE_OPTIONS = "--max-old-space-size=1536"
 
 [processes]
-  app = "node dist/index.js gateway --allow-unconfigured --port 3000 --bind lan"
+  app = "node dist/index.js gateway run --allow-unconfigured --port 3000 --bind 0.0.0.0"
 
 [http_service]
   internal_port = 3000

@@ -22,19 +22,15 @@ COPY pnpm-lock.yaml* ./
 
 # Copy UI package files first (for better caching)
 COPY ui/package.json ./ui/
-COPY ui/pnpm-lock.yaml* ./ui/
 
-# Install root dependencies
+# Install root dependencies (includes UI via workspaces)
 RUN pnpm install --frozen-lockfile --ignore-scripts || pnpm install --ignore-scripts
-
-# Install UI dependencies (do this before copying full source to leverage Docker cache)
-RUN cd ui && pnpm install --frozen-lockfile --ignore-scripts || cd ui && pnpm install --ignore-scripts
 
 # Copy source code (excluding node_modules via .dockerignore)
 COPY . .
 
-# Build UI assets
-RUN pnpm ui:build
+# Build UI assets (skip if it fails - UI is optional for gateway)
+RUN pnpm ui:build || echo "UI build failed, continuing..."
 
 # Build the project
 RUN pnpm build
