@@ -28,13 +28,11 @@ COPY . .
 # Install UI dependencies (needed for ui:build)
 RUN cd ui && pnpm install --frozen-lockfile --ignore-scripts || cd ui && pnpm install --ignore-scripts
 
-# Build UI assets first (avoid TTY issues with pnpm)
-ENV CI=true
-ENV PNPM_CONFIRM_MODULES_DIR=false
-RUN pnpm ui:build
-
 # Build the project
 RUN pnpm build
+
+# Build UI assets (needed for gateway control panel)
+RUN CI=true pnpm ui:build
 
 # Expose port
 EXPOSE 8080
