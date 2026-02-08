@@ -43,7 +43,6 @@ RUN echo "=== Build Environment ===" && node --version && pnpm --version
 RUN pnpm install --frozen-lockfile || pnpm install
 
 # Build Control UI (CRITICAL - explicit install for vite)
-# Note: vite outputs to ../dist/control-ui/ not ui/dist/
 RUN echo "=== Building Control UI ===" && \
     cd ui && pnpm install && pnpm build && \
     echo "=== UI Build Complete ===" && \
@@ -68,21 +67,14 @@ ENV MOLTBOT_GATEWAY_MODE=local
 ENV CLAWDBOT_ALLOW_UNCONFIGURED=true
 ENV MOLTBOT_ALLOW_UNCONFIGURED=true
 ENV OPENCLAW_ALLOW_UNCONFIGURED=true
+ENV MOLTBOT_NO_RESPAWN=1
 RUN mkdir -p /app/.state
 
 # Railway will inject PORT env var at runtime
 EXPOSE 8080
 
-# Copy and set up entrypoint script
-COPY railway-entrypoint.sh /app/railway-entrypoint.sh
-RUN chmod +x /app/railway-entrypoint.sh
-
 # Cache bust for Railway (change this to force rebuild)
-ARG CACHE_BUST=202602072005
-# Force rebuild
-RUN echo "Rebuild forced at $(date)" > /tmp/rebuild.txt
+ARG CACHE_BUST=202602072010
 
-# Use explicit command to bypass Railway CMD override
-# Railway often overrides CMD, so we use ENTRYPOINT + explicit args
-ENTRYPOINT ["/app/railway-entrypoint.sh"]
-CMD ["gateway", "run", "--allow-unconfigured", "--port", "8080", "--bind", "0.0.0.0"]
+# Simple direct command - no entrypoint script
+CMD ["node", "dist/index.js", "gateway", "run", "--allow-unconfigured", "--port", "8080", "--bind", "0.0.0.0"]
