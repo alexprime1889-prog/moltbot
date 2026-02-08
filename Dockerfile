@@ -1,6 +1,6 @@
 FROM node:22-slim
 
-# Install pnpm
+# Cache bust: 2026-02-07T20:15:00-05:00
 RUN npm install -g pnpm
 
 WORKDIR /app
