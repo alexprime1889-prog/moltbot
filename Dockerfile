@@ -5,7 +5,6 @@ WORKDIR /app
 # Build args and env for CI
 ARG CI=true
 ENV CI=true
-ENV NODE_ENV=production
 ENV PNPM_CONFIRM_MODULES_DIR=false
 
 # Skip postinstall scripts during build
@@ -23,7 +22,7 @@ COPY pnpm-lock.yaml* ./
 # Copy UI package files first (for better caching)
 COPY ui/package.json ./ui/
 
-# Install root dependencies (includes UI via workspaces)
+# Install ALL dependencies (including dev deps needed for build)
 RUN pnpm install --frozen-lockfile --ignore-scripts || pnpm install --ignore-scripts
 
 # Copy source code (excluding node_modules via .dockerignore)
@@ -34,6 +33,9 @@ RUN pnpm ui:build || echo "UI build failed, continuing..."
 
 # Build the project
 RUN pnpm build
+
+# Set production env for runtime
+ENV NODE_ENV=production
 
 # Expose port
 EXPOSE 8080
