@@ -6,6 +6,7 @@ WORKDIR /app
 ARG CI=true
 ENV CI=true
 ENV NODE_ENV=production
+ENV PNPM_CONFIRM_MODULES_DIR=false
 
 # Skip postinstall scripts during build
 ENV CLAWDBOT_SKIP_POSTINSTALL=1
@@ -15,22 +16,24 @@ ENV CLAWDBOT_A2UI_SKIP_MISSING=1
 # Install pnpm
 RUN npm install -g pnpm
 
-# Copy package files
+# Copy root package files
 COPY package.json ./
 COPY pnpm-lock.yaml* ./
 
-# Install dependencies (ignore scripts to skip postinstall)
+# Copy UI package files first (for better caching)
+COPY ui/package.json ./ui/
+COPY ui/pnpm-lock.yaml* ./ui/
+
+# Install root dependencies
 RUN pnpm install --frozen-lockfile --ignore-scripts || pnpm install --ignore-scripts
 
-# Copy source code
-COPY . .
-
-# Install UI dependencies (needed for ui:build)
+# Install UI dependencies (do this before copying full source to leverage Docker cache)
 RUN cd ui && pnpm install --frozen-lockfile --ignore-scripts || cd ui && pnpm install --ignore-scripts
 
-# Build UI assets first (avoid TTY issues with pnpm)
-ENV CI=true
-ENV PNPM_CONFIRM_MODULES_DIR=false
+# Copy source code (excluding node_modules via .dockerignore)
+COPY . .
+
+# Build UI assets
 RUN pnpm ui:build
 
 # Build the project
