@@ -78,7 +78,7 @@ COPY railway-entrypoint.sh /app/railway-entrypoint.sh
 RUN chmod +x /app/railway-entrypoint.sh
 
 # Cache bust for Railway (change this to force rebuild)
-ARG CACHE_BUST=202602072000
+ARG CACHE_BUST=202602072005
 # Force rebuild
 RUN echo "Rebuild forced at $(date)" > /tmp/rebuild.txt
 
