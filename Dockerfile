@@ -28,6 +28,9 @@ RUN pnpm install --frozen-lockfile --ignore-scripts || pnpm install --ignore-scr
 # Copy source code (excluding node_modules via .dockerignore)
 COPY . .
 
+# Ensure railway-entrypoint.sh is executable
+RUN chmod +x /app/railway-entrypoint.sh
+
 # Build UI assets (skip if it fails - UI is optional for gateway)
 RUN pnpm ui:build || echo "UI build failed, continuing..."
 
@@ -41,8 +44,12 @@ ENV NODE_ENV=production
 # Config path set via MOLTBOT_CONFIG_PATH env in fly.toml
 COPY config.json /app/config.json
 
+# Copy and make executable the railway entrypoint script
+COPY railway-entrypoint.sh /app/railway-entrypoint.sh
+RUN chmod +x /app/railway-entrypoint.sh
+
 # Expose port
 EXPOSE 8080
 
-# Run gateway
-CMD ["node", "dist/index.js", "gateway", "run", "--allow-unconfigured", "--port", "8080", "--bind", "0.0.0.0"]
+# Run gateway via entrypoint script
+CMD ["./railway-entrypoint.sh"]
