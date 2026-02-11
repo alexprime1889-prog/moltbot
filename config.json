@@ -2,10 +2,6 @@
   "gateway": {
     "mode": "local",
     "port": 8080,
-    "bind": "custom",
-    "customBindHost": "0.0.0.0",
-    "auth": {
-      "mode": "none"
-    }
+    "bind": "lan"
   }
 }
