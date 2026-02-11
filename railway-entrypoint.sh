@@ -27,6 +27,9 @@ export MOLTBOT_ALLOW_UNCONFIGURED="${MOLTBOT_ALLOW_UNCONFIGURED:-true}"
 export MOLTBOT_NO_RESPAWN=1
 export CLAWDBOT_NO_RESPAWN=1
 
+# Set a dummy gateway token to satisfy auth requirements
+export CLAWDBOT_GATEWAY_TOKEN="${CLAWDBOT_GATEWAY_TOKEN:-railway-dummy-token-$(date +%s)}"
+
 if [ -f /app/moltbot.mjs ]; then
   ENTRYPOINT_FILE="/app/moltbot.mjs"
 elif [ -f /app/dist/index.js ]; then
