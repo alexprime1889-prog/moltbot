@@ -30,6 +30,9 @@ export CLAWDBOT_NO_RESPAWN=1
 # Set a dummy gateway token to satisfy auth requirements
 export CLAWDBOT_GATEWAY_TOKEN="${CLAWDBOT_GATEWAY_TOKEN:-railway-dummy-token-$(date +%s)}"
 
+# Set gateway port explicitly for Railway
+export CLAWDBOT_GATEWAY_PORT="${PORT:-8080}"
+
 if [ -f /app/moltbot.mjs ]; then
   ENTRYPOINT_FILE="/app/moltbot.mjs"
 elif [ -f /app/dist/index.js ]; then
@@ -45,9 +48,8 @@ fi
 
 # If Railway does not pass a command override, run gateway with Railway-safe defaults.
 if [ "$#" -eq 0 ]; then
-  PORT_VALUE="${PORT:-8080}"
   BIND_MODE="${MOLTBOT_GATEWAY_BIND:-lan}"
-  set -- gateway run --allow-unconfigured --port "${PORT_VALUE}" --bind "${BIND_MODE}"
+  set -- gateway run --allow-unconfigured --bind "${BIND_MODE}"
   log "No runtime args provided; using default gateway command."
 else
   log "Runtime args: $*"
