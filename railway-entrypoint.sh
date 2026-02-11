@@ -48,8 +48,7 @@ fi
 
 # If Railway does not pass a command override, run gateway with Railway-safe defaults.
 if [ "$#" -eq 0 ]; then
-  BIND_MODE="${MOLTBOT_GATEWAY_BIND:-lan}"
-  set -- gateway run --allow-unconfigured --bind "${BIND_MODE}"
+  set -- gateway run --allow-unconfigured
   log "No runtime args provided; using default gateway command."
 else
   log "Runtime args: $*"
