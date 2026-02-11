@@ -33,6 +33,9 @@ export CLAWDBOT_GATEWAY_TOKEN="${CLAWDBOT_GATEWAY_TOKEN:-railway-dummy-token-$(d
 # Set gateway port explicitly for Railway
 export CLAWDBOT_GATEWAY_PORT="${PORT:-8080}"
 
+# Set config path to the config.json copied in Dockerfile
+export CLAWDBOT_CONFIG_PATH="/app/config.json"
+
 if [ -f /app/moltbot.mjs ]; then
   ENTRYPOINT_FILE="/app/moltbot.mjs"
 elif [ -f /app/dist/index.js ]; then
